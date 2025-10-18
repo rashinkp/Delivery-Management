@@ -34,7 +34,7 @@ export class OrderRepository extends BaseRepository<OrderDocument> {
     const lastOrder = await this.findOne({
       orderNumber: { $regex: `^ORD${dateStr}` },
       isActive: true
-    }, { sort: { orderNumber: -1 } });
+    });
 
     let sequence = 1;
     if (lastOrder) {

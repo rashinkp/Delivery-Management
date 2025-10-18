@@ -55,7 +55,10 @@ export class ProductService {
     }
 
     // Create product
-    const product = await this.productRepository.create(createProductDto);
+    const product = await this.productRepository.create({
+      ...createProductDto,
+      category: createProductDto.category as any
+    });
 
     this.logger.log('Product created successfully', { id: product._id });
 

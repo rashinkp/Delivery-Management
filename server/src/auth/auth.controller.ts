@@ -10,8 +10,8 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from '../dto/auth/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { CurrentUser, CurrentUserData } from './decorators/current-user.decorator';
-import { ResponseUtil } from '../common/utils/response.util';
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { CurrentUserData } from './decorators/current-user.decorator';
 import type { ApiResponse } from '../common/interfaces/api-response.interface';
 
 @Controller('auth')

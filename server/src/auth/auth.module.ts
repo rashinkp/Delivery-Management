@@ -14,12 +14,12 @@ import { ServicesModule } from '../services/services.module';
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('jwt.secret'),
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret') || 'default-secret',
         signOptions: {
-          expiresIn: configService.get<string>('jwt.expiresIn'),
+          expiresIn: configService.get<string>('jwt.expiresIn') || '24h',
         },
-      }),
+      }) as any,
       inject: [ConfigService],
     }),
     ServicesModule,

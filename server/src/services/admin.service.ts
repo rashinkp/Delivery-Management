@@ -194,7 +194,7 @@ export class AdminService {
     }
 
     // Update last login
-    await this.adminRepository.updateLastLogin(admin._id.toString());
+    await this.adminRepository.updateLastLogin((admin._id as any).toString());
 
     this.logger.log('Admin credentials validated successfully', { id: admin._id });
 

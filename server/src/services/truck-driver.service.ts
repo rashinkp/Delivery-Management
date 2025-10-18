@@ -112,7 +112,7 @@ export class TruckDriverService {
       if (licenseExpiryDate <= new Date()) {
         throw new ValidationException('License expiry date must be in the future');
       }
-      updateTruckDriverDto.isLicenseValid = licenseExpiryDate > new Date();
+      (updateTruckDriverDto as any).isLicenseValid = licenseExpiryDate > new Date();
     }
 
     const updatedDriver = await this.truckDriverRepository.updateById(id, {
@@ -224,7 +224,7 @@ export class TruckDriverService {
     }
 
     // Update last login
-    await this.truckDriverRepository.updateLastLogin(driver._id.toString());
+    await this.truckDriverRepository.updateLastLogin((driver._id as any).toString());
 
     this.logger.log('Truck driver credentials validated successfully', { id: driver._id });
 

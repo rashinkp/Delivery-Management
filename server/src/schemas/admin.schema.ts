@@ -39,8 +39,6 @@ export class Admin extends BaseEntity {
 export type AdminDocument = Admin & Document;
 export const AdminSchema = SchemaFactory.createForClass(Admin);
 
-// Add indexes for better performance
-AdminSchema.index({ email: 1 });
-AdminSchema.index({ mobile: 1 });
+// Add indexes for better performance (only for non-unique fields)
 AdminSchema.index({ role: 1 });
 AdminSchema.index({ isActive: 1 });

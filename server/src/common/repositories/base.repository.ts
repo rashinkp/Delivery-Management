@@ -25,7 +25,7 @@ export abstract class BaseRepository<T extends Document> implements BaseReposito
     try {
       const documents = await this.model.insertMany(data);
       this.logger.debug(`Created ${documents.length} ${this.model.modelName} documents`);
-      return documents;
+      return documents as unknown as T[];
     } catch (error) {
       this.logger.error(`Error creating multiple ${this.model.modelName}`, error);
       throw error;

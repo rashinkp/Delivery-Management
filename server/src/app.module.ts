@@ -29,12 +29,6 @@ import jwtConfig from './config/jwt.config';
   ],
   controllers: [AppController],
   providers: [AppService, LoggerService, DatabaseConnectionService],
-  exports: [
-    LoggerService,
-    DatabaseConnectionService,
-    SchemasModule,
-    RepositoriesModule,
-    ServicesModule,
-  ],
+  exports: [LoggerService, DatabaseConnectionService, SchemasModule, RepositoriesModule, ServicesModule],
 })
 export class AppModule {}

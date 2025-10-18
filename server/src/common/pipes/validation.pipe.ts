@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { ValidationException } from '../exceptions/custom.exceptions';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class CustomValidationPipe implements PipeTransform<any> {
       return value;
     }
 
-    const object = plainToClass(metatype, value);
+    const object = plainToInstance(metatype, value);
     const errors = await validate(object, {
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -49,7 +49,7 @@ export class CustomValidationPipe implements PipeTransform<any> {
 
     for (const error of errors) {
       if (error.constraints) {
-        messages.push(...Object.values(error.constraints));
+        messages.push(...Object.values(error.constraints as Record<string, string> || {}));
       }
       
       if (error.children && error.children.length > 0) {

@@ -44,7 +44,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  
   const logger = new LoggerService();
   logger.log(`🚀 Application is running on: http://localhost:${port}/api/v1`);
   logger.log(`📊 Health check available at: http://localhost:${port}/health`);

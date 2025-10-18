@@ -39,13 +39,26 @@ export class OrderService {
     }
 
     // Create order
+    const { deliveryInfo, location, expectedDeliveryDate, ...orderData } = createOrderDto;
     const order = await this.orderRepository.create({
-      ...createOrderDto,
+      ...orderData,
       orderNumber,
       orderDate: new Date(),
       pendingAmount: createOrderDto.totalBillAmount - createOrderDto.collectedAmount,
+      truckDriver: createOrderDto.truckDriver as any,
+      vendor: createOrderDto.vendor as any,
+      expectedDeliveryDate: expectedDeliveryDate ? new Date(expectedDeliveryDate) : undefined,
+      deliveryInfo: deliveryInfo ? {
+        ...deliveryInfo,
+        scheduledDate: deliveryInfo.scheduledDate ? new Date(deliveryInfo.scheduledDate) : undefined
+      } : undefined,
+      location: location ? {
+        ...location,
+        timestamp: new Date()
+      } : undefined,
       products: createOrderDto.products.map(product => ({
         ...product,
+        product: product.product as any,
         totalPrice: product.quantity * product.unitPrice
       }))
     });

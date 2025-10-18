@@ -14,7 +14,15 @@ export class Order extends BaseEntity {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Vendor' })
   vendor: Types.ObjectId;
 
-  @Prop({ required: true, type: [Object] })
+  @Prop({ 
+    required: true, 
+    type: [{
+      product: { type: Types.ObjectId, ref: 'Product', required: true },
+      quantity: { type: Number, required: true },
+      unitPrice: { type: Number, required: true },
+      totalPrice: { type: Number, required: true }
+    }]
+  })
   products: {
     product: Types.ObjectId;
     quantity: number;
@@ -50,7 +58,14 @@ export class Order extends BaseEntity {
     deliveryPerson?: string;
   };
 
-  @Prop({ type: Object })
+  @Prop({ 
+    type: {
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true },
+      address: { type: String, required: true },
+      timestamp: { type: Date, required: true }
+    }
+  })
   location?: {
     latitude: number;
     longitude: number;
@@ -102,8 +117,7 @@ export class Order extends BaseEntity {
 export type OrderDocument = Order & Document;
 export const OrderSchema = SchemaFactory.createForClass(Order);
 
-// Add indexes for better performance
-OrderSchema.index({ orderNumber: 1 });
+// Add indexes for better performance (only for non-unique fields)
 OrderSchema.index({ truckDriver: 1 });
 OrderSchema.index({ vendor: 1 });
 OrderSchema.index({ status: 1 });

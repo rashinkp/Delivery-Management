@@ -25,7 +25,14 @@ export class Vendor extends BaseEntity {
   @Prop({ required: true, trim: true })
   pincode: string;
 
-  @Prop({ required: true })
+  @Prop({ 
+    required: true,
+    type: {
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true },
+      address: { type: String, required: true }
+    }
+  })
   location: {
     latitude: number;
     longitude: number;
@@ -69,9 +76,7 @@ export class Vendor extends BaseEntity {
 export type VendorDocument = Vendor & Document;
 export const VendorSchema = SchemaFactory.createForClass(Vendor);
 
-// Add indexes for better performance
-VendorSchema.index({ email: 1 });
-VendorSchema.index({ mobile: 1 });
+// Add indexes for better performance (only for non-unique fields)
 VendorSchema.index({ city: 1, state: 1 });
 VendorSchema.index({ status: 1 });
 VendorSchema.index({ isActive: 1 });

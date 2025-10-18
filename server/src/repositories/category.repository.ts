@@ -180,8 +180,8 @@ export class CategoryRepository extends BaseRepository<CategoryDocument> {
     const hierarchy = [];
 
     for (const parent of parentCategories) {
-      const subCategories = await this.findSubCategories(parent._id.toString());
-      hierarchy.push({
+      const subCategories = await this.findSubCategories((parent._id as any).toString());
+      (hierarchy as any).push({
         category: parent,
         subCategories
       });

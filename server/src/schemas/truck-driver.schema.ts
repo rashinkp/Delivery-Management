@@ -45,7 +45,14 @@ export class TruckDriver extends BaseEntity {
     capacity?: number;
   };
 
-  @Prop({ type: Object })
+  @Prop({ 
+    type: {
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true },
+      address: { type: String, required: true },
+      lastUpdated: { type: Date, required: true }
+    }
+  })
   location?: {
     latitude: number;
     longitude: number;
@@ -63,9 +70,7 @@ export class TruckDriver extends BaseEntity {
 export type TruckDriverDocument = TruckDriver & Document;
 export const TruckDriverSchema = SchemaFactory.createForClass(TruckDriver);
 
-// Add indexes for better performance
-TruckDriverSchema.index({ mobile: 1 });
-TruckDriverSchema.index({ drivingLicense: 1 });
+// Add indexes for better performance (only for non-unique fields)
 TruckDriverSchema.index({ role: 1 });
 TruckDriverSchema.index({ status: 1 });
 TruckDriverSchema.index({ isActive: 1 });
