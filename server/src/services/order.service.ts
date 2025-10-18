@@ -5,9 +5,10 @@ import { PaginationDto } from '../dto/common/pagination.dto';
 import { ResponseUtil } from '../common/utils/response.util';
 import { NotFoundException, ConflictException, ValidationException } from '../common/exceptions/custom.exceptions';
 import { ORDER_STATUS } from '../common/constants/app-constants';
+import { IOrderService } from '../common/interfaces/services/order.service.interface';
 
 @Injectable()
-export class OrderService {
+export class OrderService implements IOrderService {
   private readonly logger = new Logger(OrderService.name);
 
   constructor(private readonly orderRepository: OrderRepository) {}

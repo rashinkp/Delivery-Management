@@ -4,10 +4,11 @@ import { CreateAdminDto, UpdateAdminDto, AdminResponseDto } from '../dto/admin/a
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { ResponseUtil } from '../common/utils/response.util';
 import { NotFoundException, ConflictException, ValidationException } from '../common/exceptions/custom.exceptions';
+import { IAdminService } from '../common/interfaces/services/admin.service.interface';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
-export class AdminService {
+export class AdminService implements IAdminService {
   private readonly logger = new Logger(AdminService.name);
 
   constructor(private readonly adminRepository: AdminRepository) {}
@@ -217,5 +218,39 @@ export class AdminService {
       createdAt: admin.createdAt,
       updatedAt: admin.updatedAt,
     };
+  }
+
+  // Interface compliance methods
+  async createAdmin(createAdminDto: CreateAdminDto): Promise<AdminResponseDto> {
+    return this.create(createAdminDto);
+  }
+
+  async findAllAdmins(paginationDto: PaginationDto): Promise<{ data: AdminResponseDto[]; total: number; page: number; limit: number }> {
+    return this.findAll(paginationDto);
+  }
+
+  async findAdminById(id: string): Promise<AdminResponseDto> {
+    return this.findOne(id);
+  }
+
+  async updateAdmin(id: string, updateAdminDto: UpdateAdminDto): Promise<AdminResponseDto> {
+    return this.update(id, updateAdminDto);
+  }
+
+  async deleteAdmin(id: string): Promise<void> {
+    return this.remove(id);
+  }
+
+  async checkEmailExists(email: string, excludeId?: string): Promise<boolean> {
+    return this.adminRepository.checkEmailExists(email, excludeId);
+  }
+
+  async checkMobileNumberExists(mobileNumber: string, excludeId?: string): Promise<boolean> {
+    return this.adminRepository.checkMobileNumberExists(mobileNumber, excludeId);
+  }
+
+  async findByMobileNumber(mobileNumber: string): Promise<AdminResponseDto | null> {
+    const admin = await this.adminRepository.findByMobileNumber(mobileNumber);
+    return admin ? this.mapToResponseDto(admin) : null;
   }
 }

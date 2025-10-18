@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BaseRepository } from '../common/repositories/base.repository';
 import { Vendor, VendorDocument } from '../schemas/vendor.schema';
-import { CreateVendorDto, UpdateVendorDto } from '../dto/vendor/vendor.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
+import { IVendorRepository } from '../common/interfaces/repositories/vendor.repository.interface';
 
 @Injectable()
-export class VendorRepository extends BaseRepository<VendorDocument> {
+export class VendorRepository extends BaseRepository<VendorDocument> implements IVendorRepository {
   constructor(@InjectModel(Vendor.name) private readonly vendorModel: Model<VendorDocument>) {
     super(vendorModel);
   }
@@ -261,5 +261,40 @@ export class VendorRepository extends BaseRepository<VendorDocument> {
       isActive: true,
       status: 'active'
     });
+  }
+
+  // Interface compliance methods
+  async findByCity(city: string): Promise<VendorDocument[]> {
+    return this.findVendorsByCity(city);
+  }
+
+  async findByState(state: string): Promise<VendorDocument[]> {
+    return this.findVendorsByState(state);
+  }
+
+  async findByStatus(status: string): Promise<VendorDocument[]> {
+    return this.findMany({ status, isActive: true });
+  }
+
+  async searchVendors(query: string): Promise<VendorDocument[]> {
+    return this.findMany({
+      $or: [
+        { name: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } },
+        { mobile: { $regex: query, $options: 'i' } },
+        { address: { $regex: query, $options: 'i' } },
+        { city: { $regex: query, $options: 'i' } },
+        { state: { $regex: query, $options: 'i' } }
+      ],
+      isActive: true
+    });
+  }
+
+  async findByLocation(latitude: number, longitude: number, radius: number): Promise<VendorDocument[]> {
+    return this.findVendorsByLocation(latitude, longitude, radius);
+  }
+
+  async updateLocation(vendorId: string, location: { latitude: number; longitude: number; address: string }): Promise<VendorDocument | null> {
+    return this.updateById(vendorId, { location });
   }
 }

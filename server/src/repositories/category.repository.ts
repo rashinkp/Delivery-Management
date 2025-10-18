@@ -4,9 +4,10 @@ import { Model } from 'mongoose';
 import { BaseRepository } from '../common/repositories/base.repository';
 import { Category, CategoryDocument } from '../schemas/category.schema';
 import { PaginationDto } from '../dto/common/pagination.dto';
+import { ICategoryRepository } from '../common/interfaces/repositories/category.repository.interface';
 
 @Injectable()
-export class CategoryRepository extends BaseRepository<CategoryDocument> {
+export class CategoryRepository extends BaseRepository<CategoryDocument> implements ICategoryRepository {
   constructor(@InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>) {
     super(categoryModel);
   }
@@ -188,5 +189,20 @@ export class CategoryRepository extends BaseRepository<CategoryDocument> {
     }
 
     return hierarchy;
+  }
+
+  // Interface compliance methods
+  async findCategoriesByParent(parentId: string): Promise<CategoryDocument[]> {
+    return this.findSubCategories(parentId);
+  }
+
+  async moveCategory(categoryId: string, newParentId: string | null): Promise<CategoryDocument | null> {
+    return this.updateById(categoryId, { 
+      parentCategory: newParentId || undefined 
+    });
+  }
+
+  async getCategoryWithProducts(categoryId: string): Promise<CategoryDocument | null> {
+    return this.findById(categoryId);
   }
 }

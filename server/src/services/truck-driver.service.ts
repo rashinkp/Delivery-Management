@@ -4,10 +4,11 @@ import { CreateTruckDriverDto, UpdateTruckDriverDto, TruckDriverResponseDto } fr
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { ResponseUtil } from '../common/utils/response.util';
 import { NotFoundException, ConflictException, ValidationException } from '../common/exceptions/custom.exceptions';
+import { ITruckDriverService } from '../common/interfaces/services/truck-driver.service.interface';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
-export class TruckDriverService {
+export class TruckDriverService implements ITruckDriverService {
   private readonly logger = new Logger(TruckDriverService.name);
 
   constructor(private readonly truckDriverRepository: TruckDriverRepository) {}
@@ -71,16 +72,6 @@ export class TruckDriverService {
     return this.mapToResponseDto(truckDriver);
   }
 
-  async findByMobile(mobile: string): Promise<TruckDriverResponseDto> {
-    this.logger.log('Fetching truck driver by mobile', { mobile });
-
-    const truckDriver = await this.truckDriverRepository.findByMobile(mobile);
-    if (!truckDriver) {
-      throw new NotFoundException('Truck driver not found');
-    }
-
-    return this.mapToResponseDto(truckDriver);
-  }
 
   async update(id: string, updateTruckDriverDto: UpdateTruckDriverDto): Promise<TruckDriverResponseDto> {
     this.logger.log('Updating truck driver', { id });
@@ -259,5 +250,58 @@ export class TruckDriverService {
       createdAt: driver.createdAt,
       updatedAt: driver.updatedAt,
     };
+  }
+
+  // Interface compliance methods
+  async createTruckDriver(createTruckDriverDto: CreateTruckDriverDto): Promise<TruckDriverResponseDto> {
+    return this.create(createTruckDriverDto);
+  }
+
+  async findAllTruckDrivers(paginationDto: PaginationDto): Promise<{ data: TruckDriverResponseDto[]; total: number; page: number; limit: number }> {
+    return this.findAll(paginationDto);
+  }
+
+  async findTruckDriverById(id: string): Promise<TruckDriverResponseDto> {
+    return this.findOne(id);
+  }
+
+  async updateTruckDriver(id: string, updateTruckDriverDto: UpdateTruckDriverDto): Promise<TruckDriverResponseDto> {
+    return this.update(id, updateTruckDriverDto);
+  }
+
+  async deleteTruckDriver(id: string): Promise<void> {
+    return this.remove(id);
+  }
+
+  async getDriversByStatus(status: string): Promise<TruckDriverResponseDto[]> {
+    const drivers = await this.truckDriverRepository.findByStatus(status);
+    return drivers.map(driver => this.mapToResponseDto(driver));
+  }
+
+  async checkMobileExists(mobile: string, excludeId?: string): Promise<boolean> {
+    return this.truckDriverRepository.checkMobileExists(mobile, excludeId);
+  }
+
+  async checkLicenseExists(license: string, excludeId?: string): Promise<boolean> {
+    return this.truckDriverRepository.checkLicenseExists(license, excludeId);
+  }
+
+  async findByMobile(mobile: string): Promise<TruckDriverResponseDto | null> {
+    const driver = await this.truckDriverRepository.findByMobile(mobile);
+    return driver ? this.mapToResponseDto(driver) : null;
+  }
+
+  async findByLicense(license: string): Promise<TruckDriverResponseDto | null> {
+    const driver = await this.truckDriverRepository.findByDrivingLicense(license);
+    return driver ? this.mapToResponseDto(driver) : null;
+  }
+
+  async updateLastLogin(driverId: string): Promise<void> {
+    await this.truckDriverRepository.updateLastLogin(driverId);
+  }
+
+  async getAvailableDrivers(): Promise<TruckDriverResponseDto[]> {
+    const drivers = await this.truckDriverRepository.findAvailableDrivers();
+    return drivers.map(driver => this.mapToResponseDto(driver));
   }
 }

@@ -5,9 +5,10 @@ import { BaseRepository } from '../common/repositories/base.repository';
 import { Product, ProductDocument } from '../schemas/product.schema';
 import { CreateProductDto, UpdateProductDto } from '../dto/product/product.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
+import { IProductRepository } from '../common/interfaces/repositories/product.repository.interface';
 
 @Injectable()
-export class ProductRepository extends BaseRepository<ProductDocument> {
+export class ProductRepository extends BaseRepository<ProductDocument> implements IProductRepository {
   constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>) {
     super(productModel);
   }
@@ -273,5 +274,33 @@ export class ProductRepository extends BaseRepository<ProductDocument> {
       isActive: true,
       status: 'active'
     }, { limit, sort: { rating: -1, totalSold: -1 } });
+  }
+
+  // Interface compliance methods
+  async findByVendor(vendorId: string): Promise<ProductDocument[]> {
+    return this.findMany({
+      vendor: vendorId,
+      isActive: true,
+      status: 'active'
+    }, { sort: { name: 1 } });
+  }
+
+  async findByPriceRange(minPrice: number, maxPrice: number): Promise<ProductDocument[]> {
+    return this.findMany({
+      price: { $gte: minPrice, $lte: maxPrice },
+      isActive: true,
+      status: 'active'
+    }, { sort: { price: 1 } });
+  }
+
+  async getProductWithCategory(productId: string): Promise<ProductDocument | null> {
+    return this.findById(productId);
+  }
+
+  async findActiveProducts(): Promise<ProductDocument[]> {
+    return this.findMany({
+      isActive: true,
+      status: 'active'
+    }, { sort: { name: 1 } });
   }
 }

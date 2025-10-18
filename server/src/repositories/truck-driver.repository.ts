@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BaseRepository } from '../common/repositories/base.repository';
 import { TruckDriver, TruckDriverDocument } from '../schemas/truck-driver.schema';
-import { CreateTruckDriverDto, UpdateTruckDriverDto } from '../dto/truck-driver/truck-driver.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
+import { ITruckDriverRepository } from '../common/interfaces/repositories/truck-driver.repository.interface';
 
 @Injectable()
-export class TruckDriverRepository extends BaseRepository<TruckDriverDocument> {
+export class TruckDriverRepository extends BaseRepository<TruckDriverDocument> implements ITruckDriverRepository {
   constructor(@InjectModel(TruckDriver.name) private readonly truckDriverModel: Model<TruckDriverDocument>) {
     super(truckDriverModel);
   }
@@ -215,5 +215,18 @@ export class TruckDriverRepository extends BaseRepository<TruckDriverDocument> {
       isActive: true,
       licenseExpiryDate: { $lte: expiryDate }
     });
+  }
+
+  // Interface compliance methods
+  async findByStatus(status: string): Promise<TruckDriverDocument[]> {
+    return this.findMany({ status, isActive: true }, { sort: { name: 1 } });
+  }
+
+  async getAvailableDrivers(): Promise<TruckDriverDocument[]> {
+    return this.findAvailableDrivers();
+  }
+
+  async findByLocation(latitude: number, longitude: number, radius: number): Promise<TruckDriverDocument[]> {
+    return this.findDriversNearLocation(latitude, longitude, radius);
   }
 }

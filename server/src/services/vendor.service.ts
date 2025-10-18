@@ -4,9 +4,10 @@ import { CreateVendorDto, UpdateVendorDto, VendorResponseDto } from '../dto/vend
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { ResponseUtil } from '../common/utils/response.util';
 import { NotFoundException, ConflictException, ValidationException } from '../common/exceptions/custom.exceptions';
+import { IVendorService } from '../common/interfaces/services/vendor.service.interface';
 
 @Injectable()
-export class VendorService {
+export class VendorService implements IVendorService {
   private readonly logger = new Logger(VendorService.name);
 
   constructor(private readonly vendorRepository: VendorRepository) {}
@@ -74,27 +75,6 @@ export class VendorService {
     return this.mapToResponseDto(vendor);
   }
 
-  async findByEmail(email: string): Promise<VendorResponseDto> {
-    this.logger.log('Fetching vendor by email', { email });
-
-    const vendor = await this.vendorRepository.findByEmail(email);
-    if (!vendor) {
-      throw new NotFoundException('Vendor not found');
-    }
-
-    return this.mapToResponseDto(vendor);
-  }
-
-  async findByMobile(mobile: string): Promise<VendorResponseDto> {
-    this.logger.log('Fetching vendor by mobile', { mobile });
-
-    const vendor = await this.vendorRepository.findByMobile(mobile);
-    if (!vendor) {
-      throw new NotFoundException('Vendor not found');
-    }
-
-    return this.mapToResponseDto(vendor);
-  }
 
   async update(id: string, updateVendorDto: UpdateVendorDto): Promise<VendorResponseDto> {
     this.logger.log('Updating vendor', { id });
@@ -293,5 +273,77 @@ export class VendorService {
       createdAt: vendor.createdAt,
       updatedAt: vendor.updatedAt,
     };
+  }
+
+  // Interface compliance methods
+  async createVendor(createVendorDto: CreateVendorDto): Promise<VendorResponseDto> {
+    return this.create(createVendorDto);
+  }
+
+  async findAllVendors(paginationDto: PaginationDto): Promise<{ data: VendorResponseDto[]; total: number; page: number; limit: number }> {
+    return this.findAll(paginationDto);
+  }
+
+  async findVendorById(id: string): Promise<VendorResponseDto> {
+    return this.findOne(id);
+  }
+
+  async updateVendor(id: string, updateVendorDto: UpdateVendorDto): Promise<VendorResponseDto> {
+    return this.update(id, updateVendorDto);
+  }
+
+  async deleteVendor(id: string): Promise<void> {
+    return this.remove(id);
+  }
+
+  async getVendorsByCity(city: string): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.findVendorsByCity(city);
+    return vendors.map(vendor => this.mapToResponseDto(vendor));
+  }
+
+  async getVendorsByState(state: string): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.findVendorsByState(state);
+    return vendors.map(vendor => this.mapToResponseDto(vendor));
+  }
+
+  async getVendorsByStatus(status: string): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.findByStatus(status);
+    return vendors.map(vendor => this.mapToResponseDto(vendor));
+  }
+
+  async searchVendors(query: string): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.searchVendors(query);
+    return vendors.map(vendor => this.mapToResponseDto(vendor));
+  }
+
+  async checkEmailExists(email: string, excludeId?: string): Promise<boolean> {
+    return this.vendorRepository.checkEmailExists(email, excludeId);
+  }
+
+  async checkMobileExists(mobile: string, excludeId?: string): Promise<boolean> {
+    return this.vendorRepository.checkMobileExists(mobile, excludeId);
+  }
+
+  async findByEmail(email: string): Promise<VendorResponseDto | null> {
+    const vendor = await this.vendorRepository.findByEmail(email);
+    return vendor ? this.mapToResponseDto(vendor) : null;
+  }
+
+  async findByMobile(mobile: string): Promise<VendorResponseDto | null> {
+    const vendor = await this.vendorRepository.findByMobile(mobile);
+    return vendor ? this.mapToResponseDto(vendor) : null;
+  }
+
+  async findByLocation(latitude: number, longitude: number, radius: number): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.findVendorsByLocation(latitude, longitude, radius);
+    return vendors.map(vendor => this.mapToResponseDto(vendor));
+  }
+
+  async updateLocation(vendorId: string, location: { latitude: number; longitude: number; address: string }): Promise<VendorResponseDto> {
+    const vendor = await this.vendorRepository.updateLocation(vendorId, location);
+    if (!vendor) {
+      throw new NotFoundException('Vendor not found');
+    }
+    return this.mapToResponseDto(vendor);
   }
 }

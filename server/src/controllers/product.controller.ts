@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -14,161 +15,163 @@ import { ProductService } from '../services/product.service';
 import { CreateProductDto, UpdateProductDto } from '../dto/product/product.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { ResponseUtil } from '../common/utils/response.util';
-import type { ApiResponse } from '../common/interfaces/api-response.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { USER_ROLES } from '../common/constants/app-constants';
 
 @Controller('products')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @Roles(USER_ROLES.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createProductDto: CreateProductDto): Promise<ApiResponse<any>> {
+  async create(@Body() createProductDto: CreateProductDto) {
     const product = await this.productService.create(createProductDto);
-    return ResponseUtil.created(product, 'Product created successfully');
+    return ResponseUtil.success(product, 'Product created successfully');
   }
 
   @Get()
-  async findAll(
-    @Query() pagination: PaginationDto,
-    @Query('search') search?: string,
-    @Query('category') category?: string,
-    @Query('status') status?: string,
-    @Query('isFeatured') isFeatured?: boolean,
-    @Query('isActive') isActive?: boolean,
-    @Query('minPrice') minPrice?: number,
-    @Query('maxPrice') maxPrice?: number,
-    @Query('minStock') minStock?: number,
-    @Query('maxStock') maxStock?: number,
-    @Query('tags') tags?: string,
-  ): Promise<ApiResponse<any>> {
-    const filters = {
-      search,
-      category,
-      status,
-      isFeatured,
-      isActive,
-      minPrice,
-      maxPrice,
-      minStock,
-      maxStock,
-      tags: tags ? tags.split(',') : undefined,
-    };
-
-    const result = await this.productService.findAll(pagination, filters);
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const result = await this.productService.findAll(paginationDto);
     return ResponseUtil.success(result, 'Products retrieved successfully');
   }
 
-  @Get('stats')
-  async getStats(): Promise<ApiResponse<any>> {
-    return await this.productService.getStats();
+  @Get('active')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findActive() {
+    // This would need to be implemented in the service
+    return ResponseUtil.error('Method not implemented', 'findActiveProducts');
   }
 
   @Get('featured')
-  async findFeaturedProducts(): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findFeatured() {
     const products = await this.productService.findFeaturedProducts();
     return ResponseUtil.success(products, 'Featured products retrieved successfully');
   }
 
   @Get('low-stock')
-  async findLowStockProducts(): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN)
+  async findLowStock() {
     const products = await this.productService.findLowStockProducts();
     return ResponseUtil.success(products, 'Low stock products retrieved successfully');
   }
 
   @Get('out-of-stock')
-  async findOutOfStockProducts(): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN)
+  async findOutOfStock() {
     const products = await this.productService.findOutOfStockProducts();
     return ResponseUtil.success(products, 'Out of stock products retrieved successfully');
   }
 
-  @Get('search')
-  async searchProducts(
-    @Query('q') searchTerm: string,
-    @Query('limit') limit: number = 10,
-  ): Promise<ApiResponse<any>> {
-    const products = await this.productService.searchProducts(searchTerm, limit);
-    return ResponseUtil.success(products, 'Product search results retrieved successfully');
-  }
-
-  @Get('by-tags')
-  async findProductsByTags(@Query('tags') tags: string): Promise<ApiResponse<any>> {
-    const tagArray = tags.split(',');
-    const products = await this.productService.findProductsByTags(tagArray);
-    return ResponseUtil.success(products, 'Products by tags retrieved successfully');
-  }
-
   @Get('by-category/:categoryId')
-  async findByCategory(@Param('categoryId') categoryId: string): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByCategory(@Param('categoryId') categoryId: string) {
     const products = await this.productService.findByCategory(categoryId);
     return ResponseUtil.success(products, 'Products by category retrieved successfully');
   }
 
+  @Get('by-vendor/:vendorId')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByVendor(@Param('vendorId') vendorId: string) {
+    // This would need to be implemented in the service
+    return ResponseUtil.error('Method not implemented', 'findByVendor');
+  }
+
+  @Get('by-price-range')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByPriceRange(
+    @Query('minPrice') minPrice: number,
+    @Query('maxPrice') maxPrice: number,
+  ) {
+    // This would need to be implemented in the service
+    return ResponseUtil.error('Method not implemented', 'findByPriceRange');
+  }
+
+  @Get('search')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async search(@Query('q') query: string, @Query('limit') limit: number = 10) {
+    const products = await this.productService.searchProducts(query, limit);
+    return ResponseUtil.success(products, 'Product search results retrieved successfully');
+  }
+
+  @Get('by-tags')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByTags(@Query('tags') tags: string) {
+    const tagArray = tags.split(',').map(tag => tag.trim());
+    const products = await this.productService.findProductsByTags(tagArray);
+    return ResponseUtil.success(products, 'Products by tags retrieved successfully');
+  }
+
+  @Get('stats')
+  @Roles(USER_ROLES.ADMIN)
+  async getStats() {
+    const stats = await this.productService.getStats();
+    return ResponseUtil.success(stats, 'Product statistics retrieved successfully');
+  }
+
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findOne(@Param('id') id: string) {
     const product = await this.productService.findOne(id);
     return ResponseUtil.success(product, 'Product retrieved successfully');
   }
 
+  @Patch(':id')
+  @Roles(USER_ROLES.ADMIN)
+  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    const product = await this.productService.update(id, updateProductDto);
+    return ResponseUtil.success(product, 'Product updated successfully');
+  }
+
+  @Patch(':id/status')
+  @Roles(USER_ROLES.ADMIN)
+  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    const product = await this.productService.updateStatus(id, status);
+    return ResponseUtil.success(product, 'Product status updated successfully');
+  }
+
+  @Patch(':id/stock')
+  @Roles(USER_ROLES.ADMIN)
+  async updateStock(
+    @Param('id') id: string,
+    @Body('quantity') quantity: number,
+    @Body('operation') operation: 'add' | 'subtract' = 'subtract',
+  ) {
+    const product = await this.productService.updateStock(id, quantity, operation);
+    return ResponseUtil.success(product, 'Product stock updated successfully');
+  }
+
+  @Patch(':id/featured')
+  @Roles(USER_ROLES.ADMIN)
+  async updateFeatured(@Param('id') id: string, @Body('isFeatured') isFeatured: boolean) {
+    const product = await this.productService.updateFeaturedStatus(id, isFeatured);
+    return ResponseUtil.success(product, 'Product featured status updated successfully');
+  }
+
+  @Delete(':id')
+  @Roles(USER_ROLES.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.productService.remove(id);
+    return ResponseUtil.success(null, 'Product deleted successfully');
+  }
+
   @Get('sku/:sku')
-  async findBySku(@Param('sku') sku: string): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN)
+  async findBySku(@Param('sku') sku: string) {
     const product = await this.productService.findBySku(sku);
     return ResponseUtil.success(product, 'Product retrieved successfully');
   }
 
   @Get('barcode/:barcode')
-  async findByBarcode(@Param('barcode') barcode: string): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN)
+  async findByBarcode(@Param('barcode') barcode: string) {
     const product = await this.productService.findByBarcode(barcode);
     return ResponseUtil.success(product, 'Product retrieved successfully');
-  }
-
-  @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
-  ): Promise<ApiResponse<any>> {
-    const product = await this.productService.update(id, updateProductDto);
-    return ResponseUtil.updated(product, 'Product updated successfully');
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
-    await this.productService.remove(id);
-  }
-
-  @Patch(':id/stock')
-  async updateStock(
-    @Param('id') id: string,
-    @Body() body: { quantity: number; operation: 'add' | 'subtract' },
-  ): Promise<ApiResponse<any>> {
-    const product = await this.productService.updateStock(id, body.quantity, body.operation);
-    return ResponseUtil.updated(product, 'Product stock updated successfully');
-  }
-
-  @Patch(':id/sales-data')
-  async updateSalesData(
-    @Param('id') id: string,
-    @Body() body: { quantity: number; revenue: number },
-  ): Promise<ApiResponse<any>> {
-    const product = await this.productService.updateSalesData(id, body.quantity, body.revenue);
-    return ResponseUtil.updated(product, 'Product sales data updated successfully');
-  }
-
-  @Patch(':id/status')
-  async updateStatus(
-    @Param('id') id: string,
-    @Body() body: { status: string },
-  ): Promise<ApiResponse<any>> {
-    const product = await this.productService.updateStatus(id, body.status);
-    return ResponseUtil.updated(product, 'Product status updated successfully');
-  }
-
-  @Patch(':id/featured')
-  async updateFeaturedStatus(
-    @Param('id') id: string,
-    @Body() body: { isFeatured: boolean },
-  ): Promise<ApiResponse<any>> {
-    const product = await this.productService.updateFeaturedStatus(id, body.isFeatured);
-    return ResponseUtil.updated(product, 'Product featured status updated successfully');
   }
 }

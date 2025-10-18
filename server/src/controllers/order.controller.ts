@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -14,84 +15,86 @@ import { OrderService } from '../services/order.service';
 import { CreateOrderDto, UpdateOrderDto } from '../dto/order/order.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { ResponseUtil } from '../common/utils/response.util';
-import type { ApiResponse } from '../common/interfaces/api-response.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { USER_ROLES } from '../common/constants/app-constants';
 
 @Controller('orders')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createOrderDto: CreateOrderDto): Promise<ApiResponse<any>> {
+  async create(@Body() createOrderDto: CreateOrderDto) {
     const order = await this.orderService.create(createOrderDto);
-    return ResponseUtil.created(order, 'Order created successfully');
+    return ResponseUtil.success(order, 'Order created successfully');
   }
 
   @Get()
-  async findAll(
-    @Query() pagination: PaginationDto,
-    @Query('search') search?: string,
-    @Query('truckDriver') truckDriver?: string,
-    @Query('vendor') vendor?: string,
-    @Query('status') status?: string,
-    @Query('isUrgent') isUrgent?: boolean,
-    @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string,
-    @Query('minAmount') minAmount?: number,
-    @Query('maxAmount') maxAmount?: number,
-    @Query('tags') tags?: string,
-  ): Promise<ApiResponse<any>> {
-    const filters = {
-      search,
-      truckDriver,
-      vendor,
-      status,
-      isUrgent,
-      dateFrom: dateFrom ? new Date(dateFrom) : undefined,
-      dateTo: dateTo ? new Date(dateTo) : undefined,
-      minAmount,
-      maxAmount,
-      tags: tags ? tags.split(',') : undefined,
-    };
-
-    const result = await this.orderService.findAll(pagination, filters);
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const result = await this.orderService.findAll(paginationDto);
     return ResponseUtil.success(result, 'Orders retrieved successfully');
   }
 
-  @Get('stats')
-  async getStats(): Promise<ApiResponse<any>> {
-    return await this.orderService.getStats();
-  }
-
   @Get('pending')
-  async findPendingOrders(): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findPending() {
     const orders = await this.orderService.findPendingOrders();
     return ResponseUtil.success(orders, 'Pending orders retrieved successfully');
   }
 
   @Get('in-progress')
-  async findInProgressOrders(): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findInProgress() {
     const orders = await this.orderService.findInProgressOrders();
     return ResponseUtil.success(orders, 'In-progress orders retrieved successfully');
   }
 
   @Get('completed')
-  async findCompletedOrders(): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findCompleted() {
     const orders = await this.orderService.findCompletedOrders();
     return ResponseUtil.success(orders, 'Completed orders retrieved successfully');
   }
 
   @Get('urgent')
-  async findUrgentOrders(): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findUrgent() {
     const orders = await this.orderService.findUrgentOrders();
     return ResponseUtil.success(orders, 'Urgent orders retrieved successfully');
   }
 
+  @Get('by-driver/:driverId')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByDriver(@Param('driverId') driverId: string) {
+    const orders = await this.orderService.findByTruckDriver(driverId);
+    return ResponseUtil.success(orders, 'Orders by driver retrieved successfully');
+  }
+
+  @Get('by-vendor/:vendorId')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByVendor(@Param('vendorId') vendorId: string) {
+    const orders = await this.orderService.findByVendor(vendorId);
+    return ResponseUtil.success(orders, 'Orders by vendor retrieved successfully');
+  }
+
+  @Get('by-status/:status')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByStatus(@Param('status') status: string) {
+    const orders = await this.orderService.findByStatus(status);
+    return ResponseUtil.success(orders, 'Orders by status retrieved successfully');
+  }
+
   @Get('by-date-range')
-  async findOrdersByDateRange(
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByDateRange(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
-  ): Promise<ApiResponse<any>> {
+  ) {
     const orders = await this.orderService.findOrdersByDateRange(
       new Date(startDate),
       new Date(endDate),
@@ -100,84 +103,66 @@ export class OrderController {
   }
 
   @Get('by-product/:productId')
-  async findOrdersByProduct(@Param('productId') productId: string): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByProduct(@Param('productId') productId: string) {
     const orders = await this.orderService.findOrdersByProduct(productId);
     return ResponseUtil.success(orders, 'Orders by product retrieved successfully');
   }
 
-  @Get('revenue-by-date-range')
-  async getRevenueByDateRange(
+  @Get('revenue')
+  @Roles(USER_ROLES.ADMIN)
+  async getRevenue(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
-  ): Promise<ApiResponse<any>> {
-    return await this.orderService.getRevenueByDateRange(new Date(startDate), new Date(endDate));
+  ) {
+    const revenue = await this.orderService.getRevenueByDateRange(
+      new Date(startDate),
+      new Date(endDate),
+    );
+    return ResponseUtil.success(revenue, 'Revenue data retrieved successfully');
+  }
+
+  @Get('stats')
+  @Roles(USER_ROLES.ADMIN)
+  async getStats() {
+    const stats = await this.orderService.getStats();
+    return ResponseUtil.success(stats, 'Order statistics retrieved successfully');
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findOne(@Param('id') id: string) {
     const order = await this.orderService.findOne(id);
     return ResponseUtil.success(order, 'Order retrieved successfully');
   }
 
-  @Get('order-number/:orderNumber')
-  async findByOrderNumber(@Param('orderNumber') orderNumber: string): Promise<ApiResponse<any>> {
-    const order = await this.orderService.findByOrderNumber(orderNumber);
-    return ResponseUtil.success(order, 'Order retrieved successfully');
-  }
-
-  @Get('truck-driver/:truckDriverId')
-  async findByTruckDriver(@Param('truckDriverId') truckDriverId: string): Promise<ApiResponse<any>> {
-    const orders = await this.orderService.findByTruckDriver(truckDriverId);
-    return ResponseUtil.success(orders, 'Orders by truck driver retrieved successfully');
-  }
-
-  @Get('vendor/:vendorId')
-  async findByVendor(@Param('vendorId') vendorId: string): Promise<ApiResponse<any>> {
-    const orders = await this.orderService.findByVendor(vendorId);
-    return ResponseUtil.success(orders, 'Orders by vendor retrieved successfully');
-  }
-
-  @Get('status/:status')
-  async findByStatus(@Param('status') status: string): Promise<ApiResponse<any>> {
-    const orders = await this.orderService.findByStatus(status);
-    return ResponseUtil.success(orders, 'Orders by status retrieved successfully');
-  }
-
   @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateOrderDto: UpdateOrderDto,
-  ): Promise<ApiResponse<any>> {
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     const order = await this.orderService.update(id, updateOrderDto);
-    return ResponseUtil.updated(order, 'Order updated successfully');
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
-    await this.orderService.remove(id);
+    return ResponseUtil.success(order, 'Order updated successfully');
   }
 
   @Patch(':id/status')
-  async updateStatus(
-    @Param('id') id: string,
-    @Body() body: { status: string },
-  ): Promise<ApiResponse<any>> {
-    const order = await this.orderService.updateStatus(id, body.status);
-    return ResponseUtil.updated(order, 'Order status updated successfully');
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    const order = await this.orderService.updateStatus(id, status);
+    return ResponseUtil.success(order, 'Order status updated successfully');
   }
 
-  @Patch(':id/payment-info')
-  async updatePaymentInfo(
+  @Patch(':id/payment')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async updatePayment(
     @Param('id') id: string,
     @Body() paymentInfo: { method: string; transactionId?: string; paidAt?: Date },
-  ): Promise<ApiResponse<any>> {
+  ) {
     const order = await this.orderService.updatePaymentInfo(id, paymentInfo);
-    return ResponseUtil.updated(order, 'Order payment info updated successfully');
+    return ResponseUtil.success(order, 'Order payment updated successfully');
   }
 
-  @Patch(':id/delivery-info')
-  async updateDeliveryInfo(
+  @Patch(':id/delivery')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async updateDelivery(
     @Param('id') id: string,
     @Body() deliveryInfo: {
       scheduledDate?: Date;
@@ -186,17 +171,33 @@ export class OrderController {
       deliveryNotes?: string;
       deliveryPerson?: string;
     },
-  ): Promise<ApiResponse<any>> {
+  ) {
     const order = await this.orderService.updateDeliveryInfo(id, deliveryInfo);
-    return ResponseUtil.updated(order, 'Order delivery info updated successfully');
+    return ResponseUtil.success(order, 'Order delivery updated successfully');
   }
 
   @Patch(':id/location')
+  @Roles(USER_ROLES.TRUCK_DRIVER)
   async updateLocation(
     @Param('id') id: string,
-    @Body() location: { latitude: number; longitude: number; address: string },
-  ): Promise<ApiResponse<any>> {
+    @Body() location: { latitude: number; longitude: number; address: string; timestamp: Date },
+  ) {
     const order = await this.orderService.updateLocation(id, location);
-    return ResponseUtil.updated(order, 'Order location updated successfully');
+    return ResponseUtil.success(order, 'Order location updated successfully');
+  }
+
+  @Delete(':id')
+  @Roles(USER_ROLES.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.orderService.remove(id);
+    return ResponseUtil.success(null, 'Order deleted successfully');
+  }
+
+  @Get('order-number/:orderNumber')
+  @Roles(USER_ROLES.ADMIN, USER_ROLES.TRUCK_DRIVER)
+  async findByOrderNumber(@Param('orderNumber') orderNumber: string) {
+    const order = await this.orderService.findByOrderNumber(orderNumber);
+    return ResponseUtil.success(order, 'Order retrieved successfully');
   }
 }

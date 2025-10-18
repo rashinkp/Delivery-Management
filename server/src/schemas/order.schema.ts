@@ -117,7 +117,6 @@ export class Order extends BaseEntity {
 export type OrderDocument = Order & Document;
 export const OrderSchema = SchemaFactory.createForClass(Order);
 
-// Add indexes for better performance (only for non-unique fields)
 OrderSchema.index({ truckDriver: 1 });
 OrderSchema.index({ vendor: 1 });
 OrderSchema.index({ status: 1 });

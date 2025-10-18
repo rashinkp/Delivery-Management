@@ -3,12 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { BaseRepository } from '../common/repositories/base.repository';
 import { Order, OrderDocument } from '../schemas/order.schema';
-import { CreateOrderDto, UpdateOrderDto } from '../dto/order/order.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { ORDER_STATUS } from '../common/constants/app-constants';
+import { IOrderRepository } from '../common/interfaces/repositories/order.repository.interface';
 
 @Injectable()
-export class OrderRepository extends BaseRepository<OrderDocument> {
+export class OrderRepository extends BaseRepository<OrderDocument> implements IOrderRepository {
   constructor(@InjectModel(Order.name) private readonly orderModel: Model<OrderDocument>) {
     super(orderModel);
   }

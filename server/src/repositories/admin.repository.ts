@@ -6,9 +6,10 @@ import { Admin, AdminDocument } from '../schemas/admin.schema';
 import { CreateAdminDto, UpdateAdminDto } from '../dto/admin/admin.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { NotFoundException, ConflictException } from '../common/exceptions/custom.exceptions';
+import { IAdminRepository } from '../common/interfaces/repositories/admin.repository.interface';
 
 @Injectable()
-export class AdminRepository extends BaseRepository<AdminDocument> {
+export class AdminRepository extends BaseRepository<AdminDocument> implements IAdminRepository {
   constructor(@InjectModel(Admin.name) private readonly adminModel: Model<AdminDocument>) {
     super(adminModel);
   }
@@ -144,5 +145,22 @@ export class AdminRepository extends BaseRepository<AdminDocument> {
       mobileVerified: 0,
       recentLogins: 0
     };
+  }
+
+  // Interface compliance methods
+  async findByMobileNumber(mobileNumber: string): Promise<AdminDocument | null> {
+    return this.findByMobile(mobileNumber);
+  }
+
+  async checkMobileNumberExists(mobileNumber: string, excludeId?: string): Promise<boolean> {
+    return this.checkMobileExists(mobileNumber, excludeId);
+  }
+
+  async findByRole(role: string): Promise<AdminDocument[]> {
+    return this.findMany({ role, isActive: true }, { sort: { name: 1 } });
+  }
+
+  async getActiveAdmins(): Promise<AdminDocument[]> {
+    return this.findMany({ isActive: true }, { sort: { name: 1 } });
   }
 }

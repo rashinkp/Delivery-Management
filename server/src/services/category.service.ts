@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CategoryRepository } from '../repositories/category.repository';
+import { CreateCategoryDto, UpdateCategoryDto, CategoryResponseDto } from '../dto/category/category.dto';
 import { PaginationDto } from '../dto/common/pagination.dto';
 import { ResponseUtil } from '../common/utils/response.util';
 import { NotFoundException, ConflictException, ValidationException } from '../common/exceptions/custom.exceptions';
+import { ICategoryService } from '../common/interfaces/services/category.service.interface';
 
 @Injectable()
-export class CategoryService {
+export class CategoryService implements ICategoryService {
   private readonly logger = new Logger(CategoryService.name);
 
   constructor(private readonly categoryRepository: CategoryRepository) {}
@@ -57,16 +59,6 @@ export class CategoryService {
     return this.mapToResponseDto(category);
   }
 
-  async findByName(name: string): Promise<any> {
-    this.logger.log('Fetching category by name', { name });
-
-    const category = await this.categoryRepository.findByName(name);
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-
-    return this.mapToResponseDto(category);
-  }
 
   async findActiveCategories(): Promise<any[]> {
     this.logger.log('Fetching active categories');
@@ -229,5 +221,66 @@ export class CategoryService {
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
     };
+  }
+
+  // Interface compliance methods
+  async createCategory(createCategoryDto: CreateCategoryDto): Promise<CategoryResponseDto> {
+    return this.create(createCategoryDto);
+  }
+
+  async findAllCategories(paginationDto: PaginationDto): Promise<{ data: CategoryResponseDto[]; total: number; page: number; limit: number }> {
+    return this.findAll(paginationDto);
+  }
+
+  async findCategoryById(id: string): Promise<CategoryResponseDto> {
+    return this.findOne(id);
+  }
+
+  async updateCategory(id: string, updateCategoryDto: UpdateCategoryDto): Promise<CategoryResponseDto> {
+    return this.update(id, updateCategoryDto);
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    return this.remove(id);
+  }
+
+  async getParentCategories(): Promise<CategoryResponseDto[]> {
+    const categories = await this.categoryRepository.findParentCategories();
+    return categories.map(category => this.mapToResponseDto(category));
+  }
+
+  async getSubCategories(parentId: string): Promise<CategoryResponseDto[]> {
+    const categories = await this.categoryRepository.findSubCategories(parentId);
+    return categories.map(category => this.mapToResponseDto(category));
+  }
+
+  async moveCategory(categoryId: string, newParentId: string | null): Promise<CategoryResponseDto> {
+    const category = await this.categoryRepository.moveCategory(categoryId, newParentId);
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+    return this.mapToResponseDto(category);
+  }
+
+  async getCategoriesByParent(parentId: string): Promise<CategoryResponseDto[]> {
+    const categories = await this.categoryRepository.findCategoriesByParent(parentId);
+    return categories.map(category => this.mapToResponseDto(category));
+  }
+
+  async checkNameExists(name: string, parentId?: string, excludeId?: string): Promise<boolean> {
+    return this.categoryRepository.checkNameExists(name, excludeId);
+  }
+
+  async findByName(name: string): Promise<CategoryResponseDto | null> {
+    const category = await this.categoryRepository.findByName(name);
+    return category ? this.mapToResponseDto(category) : null;
+  }
+
+  async getCategoryWithProducts(id: string): Promise<CategoryResponseDto> {
+    const category = await this.categoryRepository.getCategoryWithProducts(id);
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+    return this.mapToResponseDto(category);
   }
 }
