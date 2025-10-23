@@ -9,12 +9,16 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CreateTruckDriverDto } from './dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from './dto/update-truck-driver.dto';
+import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { ITruckDriverService } from './interfaces/truck-driver.service.interface';
 
 @Controller('truck-drivers')
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class TruckDriverController {
   constructor(
     @Inject('ITruckDriverService')
@@ -23,41 +27,76 @@ export class TruckDriverController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createTruckDriverDto: CreateTruckDriverDto) {
-    return this.truckDriverService.create(createTruckDriverDto);
+  async create(@Body() createTruckDriverDto: CreateTruckDriverDto): Promise<ApiResponseDto<any>> {
+    try {
+      const driver = await this.truckDriverService.create(createTruckDriverDto);
+      return ApiResponseDto.success(driver, 'Truck driver created successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to create truck driver', error.message);
+    }
   }
 
   @Get()
-  findAll() {
-    return this.truckDriverService.findAll();
+  async findAll(): Promise<ApiResponseDto<any>> {
+    try {
+      const drivers = await this.truckDriverService.findAll();
+      return ApiResponseDto.success(drivers, 'Truck drivers retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve truck drivers', error.message);
+    }
   }
 
   @Get('status/:status')
-  findByStatus(@Param('status') status: string) {
-    return this.truckDriverService.findByStatus(status);
+  async findByStatus(@Param('status') status: string): Promise<ApiResponseDto<any>> {
+    try {
+      const drivers = await this.truckDriverService.findByStatus(status);
+      return ApiResponseDto.success(drivers, 'Truck drivers retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve truck drivers', error.message);
+    }
   }
 
   @Get('mobile/:mobile')
-  findByMobile(@Param('mobile') mobile: string) {
-    return this.truckDriverService.findByMobile(mobile);
+  async findByMobile(@Param('mobile') mobile: string): Promise<ApiResponseDto<any>> {
+    try {
+      const driver = await this.truckDriverService.findByMobile(mobile);
+      return ApiResponseDto.success(driver, 'Truck driver retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve truck driver', error.message);
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.truckDriverService.findById(id);
+  async findOne(@Param('id') id: string): Promise<ApiResponseDto<any>> {
+    try {
+      const driver = await this.truckDriverService.findById(id);
+      return ApiResponseDto.success(driver, 'Truck driver retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve truck driver', error.message);
+    }
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateTruckDriverDto: UpdateTruckDriverDto,
-  ) {
-    return this.truckDriverService.update(id, updateTruckDriverDto);
+  ): Promise<ApiResponseDto<any>> {
+    try {
+      const driver = await this.truckDriverService.update(id, updateTruckDriverDto);
+      return ApiResponseDto.success(driver, 'Truck driver updated successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to update truck driver', error.message);
+    }
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.truckDriverService.remove(id);
+  async remove(@Param('id') id: string): Promise<ApiResponseDto<any>> {
+    try {
+      await this.truckDriverService.remove(id);
+      return ApiResponseDto.success(null, 'Truck driver deleted successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to delete truck driver', error.message);
+    }
   }
 }

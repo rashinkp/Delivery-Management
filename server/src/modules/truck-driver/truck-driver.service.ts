@@ -8,7 +8,8 @@ import type { ITruckDriverRepository } from './interfaces/truck-driver.repositor
 import { ITruckDriverService } from './interfaces/truck-driver.service.interface';
 import { CreateTruckDriverDto } from './dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from './dto/update-truck-driver.dto';
-import { TruckDriver } from 'src/schemas/truck-driver.schema';
+import { TruckDriverResponseDto } from './dto/truck-driver-response.dto';
+import { TruckDriverMapper } from './mappers/truck-driver.mapper';
 
 @Injectable()
 export class TruckDriverService implements ITruckDriverService {
@@ -19,7 +20,7 @@ export class TruckDriverService implements ITruckDriverService {
 
   async create(
     createTruckDriverDto: CreateTruckDriverDto,
-  ): Promise<TruckDriver> {
+  ): Promise<TruckDriverResponseDto> {
     // Check if mobile number already exists
     const existingDriverByMobile =
       await this.truckDriverRepository.findByMobile(
@@ -42,25 +43,27 @@ export class TruckDriverService implements ITruckDriverService {
       );
     }
 
-    return this.truckDriverRepository.create(createTruckDriverDto);
+    const driver = await this.truckDriverRepository.create(createTruckDriverDto);
+    return TruckDriverMapper.toResponseDto(driver);
   }
 
-  async findAll(): Promise<TruckDriver[]> {
-    return this.truckDriverRepository.findAll();
+  async findAll(): Promise<TruckDriverResponseDto[]> {
+    const drivers = await this.truckDriverRepository.findAll();
+    return TruckDriverMapper.toResponseDtoList(drivers);
   }
 
-  async findById(id: string): Promise<TruckDriver> {
+  async findById(id: string): Promise<TruckDriverResponseDto> {
     const driver = await this.truckDriverRepository.findById(id);
     if (!driver) {
       throw new NotFoundException('Truck driver not found');
     }
-    return driver;
+    return TruckDriverMapper.toResponseDto(driver);
   }
 
   async update(
     id: string,
     updateTruckDriverDto: UpdateTruckDriverDto,
-  ): Promise<TruckDriver> {
+  ): Promise<TruckDriverResponseDto> {
     const driver = await this.findById(id);
 
     // Check if mobile number is being updated and if it already exists
@@ -95,7 +98,8 @@ export class TruckDriverService implements ITruckDriverService {
       }
     }
 
-    return this.truckDriverRepository.update(id, updateTruckDriverDto);
+    const updatedDriver = await this.truckDriverRepository.update(id, updateTruckDriverDto);
+    return TruckDriverMapper.toResponseDto(updatedDriver);
   }
 
   async remove(id: string): Promise<void> {
@@ -106,15 +110,16 @@ export class TruckDriverService implements ITruckDriverService {
     }
   }
 
-  async findByStatus(status: string): Promise<TruckDriver[]> {
-    return this.truckDriverRepository.findByStatus(status);
+  async findByStatus(status: string): Promise<TruckDriverResponseDto[]> {
+    const drivers = await this.truckDriverRepository.findByStatus(status);
+    return TruckDriverMapper.toResponseDtoList(drivers);
   }
 
-  async findByMobile(mobile: string): Promise<TruckDriver> {
+  async findByMobile(mobile: string): Promise<TruckDriverResponseDto> {
     const driver = await this.truckDriverRepository.findByMobile(mobile);
     if (!driver) {
       throw new NotFoundException('Truck driver not found');
     }
-    return driver;
+    return TruckDriverMapper.toResponseDto(driver);
   }
 }

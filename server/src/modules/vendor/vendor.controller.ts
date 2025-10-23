@@ -9,12 +9,16 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { IVendorService } from './interfaces/vendor.service.interface';
 
 @Controller('vendors')
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class VendorController {
   constructor(
     @Inject('IVendorService')
@@ -23,13 +27,23 @@ export class VendorController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createVendorDto: CreateVendorDto) {
-    return this.vendorService.create(createVendorDto);
+  async create(@Body() createVendorDto: CreateVendorDto): Promise<ApiResponseDto<any>> {
+    try {
+      const vendor = await this.vendorService.create(createVendorDto);
+      return ApiResponseDto.success(vendor, 'Vendor created successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to create vendor', error.message);
+    }
   }
 
   @Get()
-  findAll() {
-    return this.vendorService.findAll();
+  async findAll(): Promise<ApiResponseDto<any>> {
+    try {
+      const vendors = await this.vendorService.findAll();
+      return ApiResponseDto.success(vendors, 'Vendors retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve vendors', error.message);
+    }
   }
 
   @Get('location/:location')

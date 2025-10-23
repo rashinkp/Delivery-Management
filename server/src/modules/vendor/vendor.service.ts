@@ -8,7 +8,8 @@ import type { IVendorRepository } from './interfaces/vendor.repository.interface
 import { IVendorService } from './interfaces/vendor.service.interface';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
-import { Vendor } from 'src/schemas/vendor.schema';
+import { VendorResponseDto } from './dto/vendor-response.dto';
+import { VendorMapper } from './mappers/vendor.mapper';
 @Injectable()
 export class VendorService implements IVendorService {
   constructor(
@@ -16,7 +17,7 @@ export class VendorService implements IVendorService {
     private readonly vendorRepository: IVendorRepository,
   ) {}
 
-  async create(createVendorDto: CreateVendorDto): Promise<Vendor> {
+  async create(createVendorDto: CreateVendorDto): Promise<VendorResponseDto> {
     // Check if email already exists
     const existingVendorByEmail = await this.vendorRepository.findByEmail(
       createVendorDto.email,
@@ -36,22 +37,24 @@ export class VendorService implements IVendorService {
       );
     }
 
-    return this.vendorRepository.create(createVendorDto);
+    const vendor = await this.vendorRepository.create(createVendorDto);
+    return VendorMapper.toResponseDto(vendor);
   }
 
-  async findAll(): Promise<Vendor[]> {
-    return this.vendorRepository.findAll();
+  async findAll(): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.findAll();
+    return VendorMapper.toResponseDtoList(vendors);
   }
 
-  async findById(id: string): Promise<Vendor> {
+  async findById(id: string): Promise<VendorResponseDto> {
     const vendor = await this.vendorRepository.findById(id);
     if (!vendor) {
       throw new NotFoundException('Vendor not found');
     }
-    return vendor;
+    return VendorMapper.toResponseDto(vendor);
   }
 
-  async update(id: string, updateVendorDto: UpdateVendorDto): Promise<Vendor> {
+  async update(id: string, updateVendorDto: UpdateVendorDto): Promise<VendorResponseDto> {
     const vendor = await this.findById(id);
 
     // Check if email is being updated and if it already exists
@@ -80,7 +83,8 @@ export class VendorService implements IVendorService {
       }
     }
 
-    return this.vendorRepository.update(id, updateVendorDto);
+    const updatedVendor = await this.vendorRepository.update(id, updateVendorDto);
+    return VendorMapper.toResponseDto(updatedVendor);
   }
 
   async remove(id: string): Promise<void> {
@@ -91,24 +95,25 @@ export class VendorService implements IVendorService {
     }
   }
 
-  async findByEmail(email: string): Promise<Vendor> {
+  async findByEmail(email: string): Promise<VendorResponseDto> {
     const vendor = await this.vendorRepository.findByEmail(email);
     if (!vendor) {
       throw new NotFoundException('Vendor not found');
     }
-    return vendor;
+    return VendorMapper.toResponseDto(vendor);
   }
 
-  async findByContactNumber(contactNumber: string): Promise<Vendor> {
+  async findByContactNumber(contactNumber: string): Promise<VendorResponseDto> {
     const vendor =
       await this.vendorRepository.findByContactNumber(contactNumber);
     if (!vendor) {
       throw new NotFoundException('Vendor not found');
     }
-    return vendor;
+    return VendorMapper.toResponseDto(vendor);
   }
 
-  async findByLocation(location: string): Promise<Vendor[]> {
-    return this.vendorRepository.findByLocation(location);
+  async findByLocation(location: string): Promise<VendorResponseDto[]> {
+    const vendors = await this.vendorRepository.findByLocation(location);
+    return VendorMapper.toResponseDtoList(vendors);
   }
 }
