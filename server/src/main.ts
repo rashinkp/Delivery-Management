@@ -1,51 +1,77 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { CustomValidationPipe } from './common/pipes/validation.pipe';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { ValidationPipe } from '@nestjs/common';
 import { LoggerService } from './common/logger/logger.service';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-import { APP_GUARD } from '@nestjs/core';
+import { getConnectionToken } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: new LoggerService(),
-  });
+  const app = await NestFactory.create(AppModule);
 
-  // Global prefix
-  app.setGlobalPrefix('api/v1');
+  const logger = app.get(LoggerService);
 
-  // Global validation pipe
-  app.useGlobalPipes(new CustomValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true, 
+      transform: true, 
+    }),
+  );
 
-  // Global exception filter
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // Enable graceful shutdown
+  app.enableShutdownHooks();
 
-  // Global interceptors
-  app.useGlobalInterceptors(new LoggingInterceptor());
-
-  // CORS configuration
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  });
-
-  // Health check endpoint
-  app.getHttpAdapter().get('/health', (req, res) => {
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    });
-  });
-
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 5000;
   await app.listen(port);
-  const logger = new LoggerService();
-  logger.log(`🚀 Application is running on: http://localhost:${port}/api/v1`);
-  logger.log(`📊 Health check available at: http://localhost:${port}/health`);
+  logger.log(`🚀 Application running on http://localhost:${port}`);
+
+  // Graceful shutdown handling
+  process.on('SIGINT', async () => {
+    logger.log('🛑 Received SIGINT, shutting down gracefully...', 'Application');
+    try {
+      const connection = app.get<Connection>(getConnectionToken());
+      if (connection) {
+        await connection.close();
+        logger.log('✅ MongoDB connection closed', 'Application');
+      }
+      await app.close();
+      logger.log('✅ Application closed successfully', 'Application');
+      process.exit(0);
+    } catch (error) {
+      logger.error('❌ Error during shutdown', error.message, 'Application');
+      process.exit(1);
+    }
+  });
+
+  process.on('SIGTERM', async () => {
+    logger.log('🛑 Received SIGTERM, shutting down gracefully...', 'Application');
+    try {
+      const connection = app.get<Connection>(getConnectionToken());
+      if (connection) {
+        await connection.close();
+        logger.log('✅ MongoDB connection closed', 'Application');
+      }
+      await app.close();
+      logger.log('✅ Application closed successfully', 'Application');
+      process.exit(0);
+    } catch (error) {
+      logger.error('❌ Error during shutdown', error.message, 'Application');
+      process.exit(1);
+    }
+  });
+
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (error) => {
+    logger.error('💥 Uncaught Exception', error.message, 'Application');
+    logger.error('Stack trace:', error.stack, 'Application');
+    process.exit(1);
+  });
+
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    logger.error('💥 Unhandled Rejection', `Promise: ${promise}, Reason: ${reason}`, 'Application');
+    process.exit(1);
+  });
 }
+
 bootstrap();

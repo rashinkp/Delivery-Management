@@ -1,110 +1,48 @@
-import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
-import * as winston from 'winston';
+// src/common/logger/logger.service.ts
+import { Injectable, LoggerService as NestLoggerService, Inject } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
-  private readonly logger: winston.Logger;
-
-  constructor() {
-    this.logger = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.errors({ stack: true }),
-        winston.format.json(),
-      ),
-      defaultMeta: { service: 'wholesale-delivery-api' },
-      transports: [
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple(),
-          ),
-        }),
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-          ),
-        }),
-        new winston.transports.File({
-          filename: 'logs/combined.log',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-          ),
-        }),
-      ],
-    });
-  }
+  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
 
   log(message: string, context?: string) {
-    this.logger.info(message, { context });
+    const logMessage = context ? `[${context}] ${message}` : message;
+    this.logger.info(logMessage);
   }
 
   error(message: string, trace?: string, context?: string) {
-    this.logger.error(message, { trace, context });
+    const logMessage = context ? `[${context}] ${message}` : message;
+    if (trace) {
+      this.logger.error(`${logMessage} - Stack: ${trace}`);
+    } else {
+      this.logger.error(logMessage);
+    }
   }
 
   warn(message: string, context?: string) {
-    this.logger.warn(message, { context });
+    const logMessage = context ? `[${context}] ${message}` : message;
+    this.logger.warn(logMessage);
   }
 
   debug(message: string, context?: string) {
-    this.logger.debug(message, { context });
+    const logMessage = context ? `[${context}] ${message}` : message;
+    this.logger.debug(logMessage);
   }
 
   verbose(message: string, context?: string) {
-    this.logger.verbose(message, { context });
+    const logMessage = context ? `[${context}] ${message}` : message;
+    this.logger.verbose(logMessage);
   }
 
-  // Custom methods for structured logging
-  logRequest(method: string, url: string, userAgent?: string, ip?: string) {
-    this.logger.info('HTTP Request', {
-      method,
-      url,
-      userAgent,
-      ip,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  logResponse(method: string, url: string, statusCode: number, responseTime: number) {
-    this.logger.info('HTTP Response', {
-      method,
-      url,
-      statusCode,
-      responseTime,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  logDatabaseQuery(query: string, parameters?: any[], executionTime?: number) {
-    this.logger.debug('Database Query', {
-      query,
-      parameters,
-      executionTime,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  logBusinessLogic(operation: string, entity: string, id?: string, details?: any) {
-    this.logger.info('Business Logic', {
-      operation,
-      entity,
-      id,
-      details,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  logSecurityEvent(event: string, details: any) {
-    this.logger.warn('Security Event', {
-      event,
-      details,
-      timestamp: new Date().toISOString(),
-    });
+  // Additional utility methods
+  fatal(message: string, trace?: string, context?: string) {
+    const logMessage = context ? `[${context}] ${message}` : message;
+    if (trace) {
+      this.logger.error(`${logMessage} - Stack: ${trace}`);
+    } else {
+      this.logger.error(logMessage);
+    }
   }
 }
