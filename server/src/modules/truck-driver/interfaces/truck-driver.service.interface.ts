@@ -1,6 +1,7 @@
 import { TruckDriverResponseDto } from '../dto/truck-driver-response.dto';
 import { CreateTruckDriverDto } from '../dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from '../dto/update-truck-driver.dto';
+import { LoginTruckDriverDto } from '../dto/login-truck-driver.dto';
 
 export interface ITruckDriverService {
   create(createTruckDriverDto: CreateTruckDriverDto): Promise<TruckDriverResponseDto>;
@@ -13,4 +14,5 @@ export interface ITruckDriverService {
   remove(id: string): Promise<void>;
   findByStatus(status: string): Promise<TruckDriverResponseDto[]>;
   findByMobile(mobile: string): Promise<TruckDriverResponseDto>;
+  login(loginDto: LoginTruckDriverDto): Promise<{ token: string }>;
 }

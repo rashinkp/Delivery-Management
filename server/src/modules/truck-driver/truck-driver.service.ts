@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   Inject,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { ITruckDriverRepository } from './interfaces/truck-driver.repository.interface';
 import { ITruckDriverService } from './interfaces/truck-driver.service.interface';
@@ -10,12 +11,16 @@ import { CreateTruckDriverDto } from './dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from './dto/update-truck-driver.dto';
 import { TruckDriverResponseDto } from './dto/truck-driver-response.dto';
 import { TruckDriverMapper } from './mappers/truck-driver.mapper';
+import { JwtService } from '@nestjs/jwt';
+import { LoginTruckDriverDto } from './dto/login-truck-driver.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class TruckDriverService implements ITruckDriverService {
   constructor(
     @Inject('ITruckDriverRepository')
     private readonly truckDriverRepository: ITruckDriverRepository,
+    private readonly jwtService: JwtService,
   ) {}
 
   async create(
@@ -43,7 +48,8 @@ export class TruckDriverService implements ITruckDriverService {
       );
     }
 
-    const driver = await this.truckDriverRepository.create(createTruckDriverDto);
+    const driver =
+      await this.truckDriverRepository.create(createTruckDriverDto);
     return TruckDriverMapper.toResponseDto(driver);
   }
 
@@ -98,7 +104,10 @@ export class TruckDriverService implements ITruckDriverService {
       }
     }
 
-    const updatedDriver = await this.truckDriverRepository.update(id, updateTruckDriverDto);
+    const updatedDriver = await this.truckDriverRepository.update(
+      id,
+      updateTruckDriverDto,
+    );
     return TruckDriverMapper.toResponseDto(updatedDriver);
   }
 
@@ -121,5 +130,17 @@ export class TruckDriverService implements ITruckDriverService {
       throw new NotFoundException('Truck driver not found');
     }
     return TruckDriverMapper.toResponseDto(driver);
+  }
+
+  async login(loginDto: LoginTruckDriverDto): Promise<{ token: string }> {
+    const driver = await this.truckDriverRepository.findByMobile(loginDto.mobile);
+    if (!driver) throw new UnauthorizedException('Invalid mobile or password');
+
+    const isMatch = await bcrypt.compare(loginDto.password, driver.password);
+    if (!isMatch) throw new UnauthorizedException('Invalid mobile or password');
+
+    const payload = { sub: driver._id, mobile: driver.mobile, role: 'driver' };
+    const token = await this.jwtService.signAsync(payload);
+    return { token };
   }
 }

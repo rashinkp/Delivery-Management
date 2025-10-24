@@ -7,12 +7,18 @@ import {
 import { TruckDriverController } from './truck-driver.controller';
 import { TruckDriverService } from './truck-driver.service';
 import { TruckDriverRepository } from './truck-driver.repository';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: TruckDriver.name, schema: TruckDriverSchema },
     ]),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET || 'supersecret',
+      signOptions: { expiresIn: '1d' },
+    }),
   ],
   controllers: [TruckDriverController],
   providers: [
