@@ -1,54 +1,75 @@
+
 import type { FC } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// Admin pages
+
 import AdminLogin from "@/pages/admin/Login";
 import AdminDashboard from "@/pages/admin/Dashboard";
-
-// Driver pages
-import DriverLogin from "@/pages/driver/Login";
-import DriverDashboard from "@/pages/driver/Dashboard";
-import AdminLayout from "@/components/layouts/AdminLayout";
 import DriverManagement from "@/pages/admin/DriverManagement";
 import VendorManagement from "@/pages/admin/VendorManagement";
 import OrderManagement from "@/pages/admin/OrderManagement";
-import DriverLayout from "@/components/layouts/DriverLayout";
+
+import DriverLogin from "@/pages/driver/DriverLogin";
+import DriverDashboard from "@/pages/driver/Dashboard";
 import Order from "@/pages/driver/Order";
+
+import AdminLayout from "@/components/layouts/AdminLayout";
+import DriverLayout from "@/components/layouts/DriverLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoutes";
+import { PublicRoute } from "@/components/PublicRoutes";
 
 const AppRoutes: FC = () => {
   return (
     <Routes>
-      {/* Admin routes */}
-      <Route path="/admin/login" element={<AdminLogin />} />
+      {/* ================= ADMIN ROUTES ================= */}
+      <Route
+        path="/admin/login"
+        element={
+          <PublicRoute role="admin">
+            <AdminLogin />
+          </PublicRoute>
+        }
+      />
+
       <Route
         path="/admin"
         element={
-          <AdminLayout>
-            <Navigate to="/admin/dashboard" />
-          </AdminLayout>
+          <ProtectedRoute role="admin">
+            <AdminLayout />
+          </ProtectedRoute>
         }
       >
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="truck-drivers" element={<DriverManagement />} />
         <Route path="vendors" element={<VendorManagement />} />
         <Route path="orders" element={<OrderManagement />} />
       </Route>
 
-      {/* Driver routes */}
-      <Route path="/driver/login" element={<DriverLogin />} />
+      {/* ================= DRIVER ROUTES ================= */}
+      <Route
+        path="/driver/login"
+        element={
+          <PublicRoute role="driver">
+            <DriverLogin />
+          </PublicRoute>
+        }
+      />
+
       <Route
         path="/driver"
         element={
-          <DriverLayout>
-            <Navigate to="/driver/dashboard" />
-          </DriverLayout>
+          <ProtectedRoute role="driver">
+            <DriverLayout />
+          </ProtectedRoute>
         }
       >
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DriverDashboard />} />
         <Route path="deliveries" element={<Order />} />
       </Route>
 
-      {/* Fallback */}
+      {/* ================= FALLBACK ================= */}
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
   );

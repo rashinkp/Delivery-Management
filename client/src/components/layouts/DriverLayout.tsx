@@ -1,14 +1,13 @@
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
+import { Outlet } from "react-router-dom";
 
-interface DriverLayoutProps {
-  children: ReactNode;
-}
-
-const DriverLayout: FC<DriverLayoutProps> = ({ children }) => {
+const DriverLayout: FC = () => {
   return (
     <div className="min-h-screen p-4 bg-gray-100">
-      <header className="mb-4">Truck Driver Panel</header>
-      <main>{children}</main>
+      <header className="mb-4 font-bold text-xl">Truck Driver Panel</header>
+      <main>
+        <Outlet /> 
+      </main>
     </div>
   );
 };

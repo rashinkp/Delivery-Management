@@ -1,44 +1,44 @@
+// src/pages/DriverLogin.tsx
 import { useState } from "react";
 import ReusableForm from "@/components/Form";
 import FormInput from "@/components/Input";
 import { Eye, EyeOff } from "lucide-react";
-import type { FormikHelpers } from "formik";
-import { LoginSchema } from "@/validators/admin";
-import { useAdminLogin } from "@/hooks/useAdminLogin";
+import type { FormikHelpers }  from "formik";
+import { DriverLoginSchema } from "@/validators/driver";
 
-const AdminLogin = () => {
-  const initialValues = { email: "", password: "" };
+const DriverLogin = () => {
+  const initialValues = { mobile: "", password: "" };
   const [showPassword, setShowPassword] = useState(false);
 
-   const { mutateAsync: login, isPending } = useAdminLogin();
-
-   const handleSubmit = async (
-     values: typeof initialValues,
-     helpers: FormikHelpers<typeof initialValues>
-   ): Promise<void> => {
-     try {
-       await login(values);
-       helpers.resetForm();
-     } catch (error) {
-       console.error(error);
-     }
-   };
+  const handleSubmit = async (
+  values: typeof initialValues,
+    helpers: FormikHelpers<typeof initialValues>
+  ): Promise<void> => {
+    try {
+      console.log("Driver Login:", values);
+      // Replace with actual API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      helpers.resetForm();
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Login</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Driver Login</h1>
           <p className="text-gray-500 text-sm">
-            Enter your credentials to access the dashboard
+            Use your registered mobile number to log in
           </p>
         </div>
 
         {/* Form */}
         <ReusableForm
           initialValues={initialValues}
-          validationSchema={LoginSchema}
+          validationSchema={DriverLoginSchema}
           onSubmit={handleSubmit}
           submitButtonText="Login"
         >
@@ -50,16 +50,16 @@ const AdminLogin = () => {
             handleBlur,
           }) => (
             <div className="space-y-5">
-              {/* Email Field */}
+              {/* Mobile Number Field */}
               <FormInput
-                label="Email"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
-                value={values.email}
+                label="Mobile Number"
+                name="mobile"
+                type="tel"
+                placeholder="9876543210"
+                value={values.mobile}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                error={touched.email ? errors.email : undefined}
+                error={touched.mobile ? errors.mobile : undefined}
               />
 
               {/* Password Field with Eye Icon */}
@@ -78,6 +78,7 @@ const AdminLogin = () => {
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -100,4 +101,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin;
+export default DriverLogin;

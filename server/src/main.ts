@@ -17,8 +17,8 @@ async function bootstrap() {
 
   // 🔒 Enable CORS for frontend communication with cookies
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true, // allows cookies
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
   });
 
   // 🧾 Use your custom logger
