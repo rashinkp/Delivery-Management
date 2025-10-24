@@ -11,12 +11,16 @@ import {
   Inject,
   UsePipes,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { IVendorService } from './interfaces/vendor.service.interface';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('vendors')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class VendorController {

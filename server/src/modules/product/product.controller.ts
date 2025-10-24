@@ -12,12 +12,17 @@ import {
   UsePipes,
   ValidationPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { IProductService } from './interfaces/product.service.interface';
+import { Roles } from 'src/common/decorators/role.decorator';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('products')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class ProductController {
@@ -27,8 +32,11 @@ export class ProductController {
   ) {}
 
   @Post()
+  @Roles('admin')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createProductDto: CreateProductDto): Promise<ApiResponseDto<any>> {
+  async create(
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<ApiResponseDto<any>> {
     try {
       const product = await this.productService.create(createProductDto);
       return ApiResponseDto.success(product, 'Product created successfully');
@@ -41,17 +49,25 @@ export class ProductController {
   async findAll(): Promise<ApiResponseDto<any>> {
     try {
       const products = await this.productService.findAll();
-      return ApiResponseDto.success(products, 'Products retrieved successfully');
+      return ApiResponseDto.success(
+        products,
+        'Products retrieved successfully',
+      );
     } catch (error) {
       return ApiResponseDto.error('Failed to retrieve products', error.message);
     }
   }
 
   @Get('category/:category')
-  async findByCategory(@Param('category') category: string): Promise<ApiResponseDto<any>> {
+  async findByCategory(
+    @Param('category') category: string,
+  ): Promise<ApiResponseDto<any>> {
     try {
       const products = await this.productService.findByCategory(category);
-      return ApiResponseDto.success(products, 'Products retrieved successfully');
+      return ApiResponseDto.success(
+        products,
+        'Products retrieved successfully',
+      );
     } catch (error) {
       return ApiResponseDto.error('Failed to retrieve products', error.message);
     }
@@ -63,20 +79,34 @@ export class ProductController {
     @Query('maxPrice') maxPrice: number,
   ): Promise<ApiResponseDto<any>> {
     try {
-      const products = await this.productService.findByPriceRange(minPrice, maxPrice);
-      return ApiResponseDto.success(products, 'Products retrieved successfully');
+      const products = await this.productService.findByPriceRange(
+        minPrice,
+        maxPrice,
+      );
+      return ApiResponseDto.success(
+        products,
+        'Products retrieved successfully',
+      );
     } catch (error) {
       return ApiResponseDto.error('Failed to retrieve products', error.message);
     }
   }
 
   @Get('low-stock')
-  async findLowStock(@Query('threshold') threshold: number): Promise<ApiResponseDto<any>> {
+  async findLowStock(
+    @Query('threshold') threshold: number,
+  ): Promise<ApiResponseDto<any>> {
     try {
       const products = await this.productService.findLowStock(threshold);
-      return ApiResponseDto.success(products, 'Low stock products retrieved successfully');
+      return ApiResponseDto.success(
+        products,
+        'Low stock products retrieved successfully',
+      );
     } catch (error) {
-      return ApiResponseDto.error('Failed to retrieve low stock products', error.message);
+      return ApiResponseDto.error(
+        'Failed to retrieve low stock products',
+        error.message,
+      );
     }
   }
 
@@ -91,6 +121,7 @@ export class ProductController {
   }
 
   @Patch(':id')
+  @Roles('admin')
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
@@ -104,6 +135,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @Roles('admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string): Promise<ApiResponseDto<any>> {
     try {
@@ -114,4 +146,3 @@ export class ProductController {
     }
   }
 }
-

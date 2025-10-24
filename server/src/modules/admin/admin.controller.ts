@@ -8,6 +8,7 @@ import {
   ValidationPipe,
   Inject,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
@@ -15,7 +16,10 @@ import { ApiResponseDto } from 'src/common/dto/api-response.dto';
 import type { IAdminService } from './interfaces/admin.service.interface';
 import { Public } from 'src/common/decorators/public.decorator';
 import type { Response } from 'express';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class AdminController {
