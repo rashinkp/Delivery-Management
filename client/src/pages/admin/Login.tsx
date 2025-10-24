@@ -1,53 +1,99 @@
-
+import { useState } from "react";
 import ReusableForm from "@/components/Form";
 import FormInput from "@/components/Input";
-import * as Yup from "yup";
-
-const LoginSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Required"),
-  password: Yup.string().min(6, "Too short").required("Required"),
-});
+import { Eye, EyeOff } from "lucide-react";
+import type { FormikHelpers } from "formik";
+import { LoginSchema } from "@/validators/admin";
 
 const AdminLogin = () => {
   const initialValues = { email: "", password: "" };
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (values: typeof initialValues) => {
-    console.log(values); 
+  const handleSubmit = async (
+    values: typeof initialValues,
+    helpers: FormikHelpers<typeof initialValues>
+  ): Promise<void> => {
+    try {
+      console.log(values);
+      await new Promise<void>((resolve) => setTimeout(resolve, 2000));
+      helpers.resetForm();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-4">Admin Login</h2>
-      <ReusableForm
-        initialValues={initialValues}
-        validationSchema={LoginSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ values, errors, touched, handleChange, handleBlur }) => (
-          <>
-            <FormInput
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="Enter your email"
-              value={values.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.email ? errors.email : undefined}
-            />
-            <FormInput
-              label="Password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              value={values.password}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.password ? errors.password : undefined}
-            />
-          </>
-        )}
-      </ReusableForm>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Login</h1>
+          <p className="text-gray-500 text-sm">
+            Enter your credentials to access the dashboard
+          </p>
+        </div>
+
+        {/* Form */}
+        <ReusableForm
+          initialValues={initialValues}
+          validationSchema={LoginSchema}
+          onSubmit={handleSubmit}
+          submitButtonText="Login"
+        >
+          {({
+            values,
+            errors,
+            touched,
+            handleChange,
+            handleBlur,
+          }) => (
+            <div className="space-y-5">
+              {/* Email Field */}
+              <FormInput
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                value={values.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.email ? errors.email : undefined}
+              />
+
+              {/* Password Field with Eye Icon */}
+              <div className="relative">
+                <FormInput
+                  label="Password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={values.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.password ? errors.password : undefined}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </ReusableForm>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-500 mt-6">
+          © 2025 Wholesale Delivery Management. All rights reserved.
+        </p>
+      </div>
     </div>
   );
 };

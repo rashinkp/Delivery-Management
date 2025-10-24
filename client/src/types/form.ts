@@ -1,19 +1,19 @@
-import type { FormikHelpers } from "formik";
-import type { ReactNode } from "react";
+import type { FormikErrors, FormikHelpers, FormikTouched } from "formik";
 
 export interface ReusableFormProps<T> {
   initialValues: T;
-  validationSchema: any; // yup schema
+  validationSchema?: any; // Yup schema
   onSubmit: (values: T, helpers: FormikHelpers<T>) => void | Promise<void>;
   children: (props: {
     values: T;
-    errors: Record<string, any>;
-    touched: Record<string, any>;
-    handleChange: (e: any) => void;
-    handleBlur: (e: any) => void;
-  }) => ReactNode; // function-as-child that renders form fields
+    errors: FormikErrors<T>; // ✅ Use FormikErrors
+    touched: FormikTouched<T>; // ✅ Use FormikTouched
+    handleChange: (e: React.ChangeEvent<any>) => void;
+    handleBlur: (e: React.FocusEvent<any>) => void;
+    isSubmitting: boolean;
+  }) => React.ReactNode;
+  submitButtonText?: string;
 }
-
 
 
 export interface FormInputProps {

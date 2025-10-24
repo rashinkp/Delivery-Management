@@ -1,44 +1,35 @@
-// components/ReusableForm.tsx
-import { Formik, Form } from "formik";
+import { Formik, Form, type FormikProps } from "formik";
 import type { ReusableFormProps } from "@/types/form";
-
-
+import { Button } from "./ui/button";
+import { Loader2 } from "lucide-react";
 
 const ReusableForm = <T extends {}>({
   initialValues,
   validationSchema,
   onSubmit,
   children,
-}: ReusableFormProps<T>) => {
+  submitButtonText = "Submit",
+}: ReusableFormProps<T> & { submitButtonText?: string }) => {
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onSubmit}
     >
-      {({
-        errors,
-        touched,
-        handleChange,
-        handleBlur,
-        values,
-        isSubmitting,
-      }) => (
-        <Form className="space-y-4">
-          {children({
-            values,
-            errors,
-            touched,
-            handleChange,
-            handleBlur,
-          })}
-          <button
+      {(formik: FormikProps<T>) => (
+        <Form className="space-y-6">
+          {typeof children === "function"
+            ? (children as (props: FormikProps<T>) => React.ReactNode)(formik)
+            : children}
+
+          <Button
             type="submit"
-            disabled={isSubmitting}
-            className="btn btn-primary"
+            disabled={formik.isSubmitting}
+            className="w-full h-11 text-base font-medium flex items-center justify-center gap-2"
           >
-            Submit
-          </button>
+            {formik.isSubmitting && <Loader2 className="animate-spin h-5 w-5" />}
+            {submitButtonText}
+          </Button>
         </Form>
       )}
     </Formik>

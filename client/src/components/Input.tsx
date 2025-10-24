@@ -1,10 +1,7 @@
 import type { FC } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { FormControl, FormMessage } from "@/components/ui/form";
 import type { FormInputProps } from "@/types/form";
-
-
 
 const FormInput: FC<FormInputProps> = ({
   label,
@@ -17,8 +14,10 @@ const FormInput: FC<FormInputProps> = ({
   error,
 }) => {
   return (
-    <FormControl>
-      <Label htmlFor={name}>{label}</Label>
+    <div className="space-y-1.5">
+      <Label htmlFor={name} className="text-sm font-medium text-gray-700">
+        {label}
+      </Label>
       <Input
         id={name}
         name={name}
@@ -27,10 +26,12 @@ const FormInput: FC<FormInputProps> = ({
         value={value}
         onChange={onChange}
         onBlur={onBlur}
-        className={error ? "border-red-500" : ""}
+        className={`h-11 transition-colors ${
+          error ? "border-red-500 focus-visible:ring-red-500" : ""
+        }`}
       />
-      {error && <FormMessage className="text-red-500">{error}</FormMessage>}
-    </FormControl>
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
   );
 };
 
