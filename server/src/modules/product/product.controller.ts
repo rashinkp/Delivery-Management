@@ -46,6 +46,7 @@ export class ProductController {
   }
 
   @Get()
+  @Roles('admin', 'driver') // Both admin and drivers can view products
   async findAll(): Promise<ApiResponseDto<any>> {
     try {
       const products = await this.productService.findAll();
@@ -59,6 +60,7 @@ export class ProductController {
   }
 
   @Get('category/:category')
+  @Roles('admin', 'driver') // Both admin and drivers can filter by category
   async findByCategory(
     @Param('category') category: string,
   ): Promise<ApiResponseDto<any>> {
@@ -74,6 +76,7 @@ export class ProductController {
   }
 
   @Get('price-range')
+  @Roles('admin', 'driver') // Both admin and drivers can filter by price range
   async findByPriceRange(
     @Query('minPrice') minPrice: number,
     @Query('maxPrice') maxPrice: number,
@@ -93,6 +96,7 @@ export class ProductController {
   }
 
   @Get('low-stock')
+  @Roles('admin') // Only admin can check low stock
   async findLowStock(
     @Query('threshold') threshold: number,
   ): Promise<ApiResponseDto<any>> {
@@ -111,6 +115,7 @@ export class ProductController {
   }
 
   @Get(':id')
+  @Roles('admin', 'driver') // Both admin and drivers can view specific products
   async findOne(@Param('id') id: string): Promise<ApiResponseDto<any>> {
     try {
       const product = await this.productService.findById(id);

@@ -19,6 +19,7 @@ import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { IVendorService } from './interfaces/vendor.service.interface';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/role.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('vendors')
@@ -31,6 +32,7 @@ export class VendorController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles('admin') // Only admin can create vendors
   async create(@Body() createVendorDto: CreateVendorDto): Promise<ApiResponseDto<any>> {
     try {
       const vendor = await this.vendorService.create(createVendorDto);
@@ -41,6 +43,7 @@ export class VendorController {
   }
 
   @Get()
+  @Roles('admin', 'driver') // Both admin and drivers can view vendors
   async findAll(): Promise<ApiResponseDto<any>> {
     try {
       const vendors = await this.vendorService.findAll();
@@ -51,32 +54,38 @@ export class VendorController {
   }
 
   @Get('location/:location')
+  @Roles('admin', 'driver') // Both admin and drivers can search by location
   findByLocation(@Param('location') location: string) {
     return this.vendorService.findByLocation(location);
   }
 
   @Get('email/:email')
+  @Roles('admin') // Only admin can search by email
   findByEmail(@Param('email') email: string) {
     return this.vendorService.findByEmail(email);
   }
 
   @Get('contact/:contactNumber')
+  @Roles('admin') // Only admin can search by contact number
   findByContactNumber(@Param('contactNumber') contactNumber: string) {
     return this.vendorService.findByContactNumber(contactNumber);
   }
 
   @Get(':id')
+  @Roles('admin', 'driver') // Both admin and drivers can view specific vendors
   findOne(@Param('id') id: string) {
     return this.vendorService.findById(id);
   }
 
   @Patch(':id')
+  @Roles('admin') // Only admin can update vendors
   update(@Param('id') id: string, @Body() updateVendorDto: UpdateVendorDto) {
     return this.vendorService.update(id, updateVendorDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('admin') // Only admin can delete vendors
   remove(@Param('id') id: string) {
     return this.vendorService.remove(id);
   }

@@ -73,6 +73,7 @@ export class TruckDriverController {
   }
 
   @Get('status/:status')
+  @Roles('admin') // Only admin can filter by status
   async findByStatus(
     @Param('status') status: string,
   ): Promise<ApiResponseDto<any>> {
@@ -91,6 +92,7 @@ export class TruckDriverController {
   }
 
   @Get('mobile/:mobile')
+  @Roles('admin') // Only admin can search by mobile
   async findByMobile(
     @Param('mobile') mobile: string,
   ): Promise<ApiResponseDto<any>> {
@@ -109,6 +111,7 @@ export class TruckDriverController {
   }
 
   @Get(':id')
+  @Roles('admin', 'driver') // Both admin and drivers can view specific driver info
   async findOne(@Param('id') id: string): Promise<ApiResponseDto<any>> {
     try {
       const driver = await this.truckDriverService.findById(id);
@@ -125,6 +128,7 @@ export class TruckDriverController {
   }
 
   @Patch(':id')
+  @Roles('admin') // Only admin can update driver profiles
   async update(
     @Param('id') id: string,
     @Body() updateTruckDriverDto: UpdateTruckDriverDto,
@@ -148,6 +152,7 @@ export class TruckDriverController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('admin') // Only admin can delete drivers
   async remove(@Param('id') id: string): Promise<ApiResponseDto<any>> {
     try {
       await this.truckDriverService.remove(id);

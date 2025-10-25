@@ -20,6 +20,7 @@ import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { IOrderService } from './interfaces/order.service.interface';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { Roles } from 'src/common/decorators/role.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('orders')
@@ -32,6 +33,7 @@ export class OrderController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles('driver') // Only drivers can create orders
   async create(
     @Body() createOrderDto: CreateOrderDto,
   ): Promise<ApiResponseDto<any>> {
@@ -44,6 +46,7 @@ export class OrderController {
   }
 
   @Get()
+  @Roles('admin', 'driver') // Both admin and drivers can view orders
   async findAll(): Promise<ApiResponseDto<any>> {
     try {
       const orders = await this.orderService.findAll();
@@ -54,6 +57,7 @@ export class OrderController {
   }
 
   @Get(':id')
+  @Roles('admin', 'driver') // Both admin and drivers can view specific orders
   async findOne(@Param('id') id: string): Promise<ApiResponseDto<any>> {
     try {
       const order = await this.orderService.findById(id);
@@ -64,6 +68,7 @@ export class OrderController {
   }
 
   @Patch(':id')
+  @Roles('driver') // Only drivers can update orders
   async update(
     @Param('id') id: string,
     @Body() updateOrderDto: UpdateOrderDto,
@@ -78,6 +83,7 @@ export class OrderController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('admin') // Only admin can delete orders
   async remove(@Param('id') id: string): Promise<ApiResponseDto<any>> {
     try {
       await this.orderService.remove(id);
@@ -89,6 +95,7 @@ export class OrderController {
 
   // Optional: Filter by driver
   @Get('driver/:driverId')
+  @Roles('admin', 'driver') // Both admin and drivers can filter by driver
   async findByDriver(
     @Param('driverId') driverId: string,
   ): Promise<ApiResponseDto<any>> {
@@ -106,6 +113,7 @@ export class OrderController {
 
   // Optional: Filter by vendor
   @Get('vendor/:vendorId')
+  @Roles('admin', 'driver') // Both admin and drivers can filter by vendor
   async findByVendor(
     @Param('vendorId') vendorId: string,
   ): Promise<ApiResponseDto<any>> {
@@ -121,6 +129,7 @@ export class OrderController {
 
   // Optional: Filter by status
   @Get('status/:status')
+  @Roles('admin', 'driver') // Both admin and drivers can filter by status
   async findByStatus(
     @Param('status') status: string,
   ): Promise<ApiResponseDto<any>> {
