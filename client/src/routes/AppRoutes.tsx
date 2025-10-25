@@ -1,7 +1,5 @@
-
 import type { FC } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
 
 import AdminLogin from "@/pages/admin/Login";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -15,8 +13,8 @@ import Order from "@/pages/driver/Order";
 
 import AdminLayout from "@/components/layouts/AdminLayout";
 import DriverLayout from "@/components/layouts/DriverLayout";
-import { ProtectedRoute } from "@/components/ProtectedRoutes";
 import { PublicRoute } from "@/components/PublicRoutes";
+import { ProtectedRoute } from "@/components/ProtectedRoutes";
 
 const AppRoutes: FC = () => {
   return (
@@ -70,6 +68,7 @@ const AppRoutes: FC = () => {
       </Route>
 
       {/* ================= FALLBACK ================= */}
+      <Route path="/" element={<Navigate to="/admin/login" replace />} />
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
   );

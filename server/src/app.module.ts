@@ -13,6 +13,7 @@ import { JwtStrategy } from './common/strategies/jwt.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     ProductModule,
     OrderModule,
     AdminModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [

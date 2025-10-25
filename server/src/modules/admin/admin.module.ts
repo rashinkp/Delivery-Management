@@ -5,14 +5,12 @@ import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { Admin, AdminSchema } from 'src/schemas/admin.schema';
 import { AdminRepository } from './admin.repository';
+import { jwtConfig } from '../../common/config/jwt.config';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Admin.name, schema: AdminSchema }]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      signOptions: { expiresIn: '7d' },
-    }),
+    JwtModule.register(jwtConfig),
   ],
   controllers: [AdminController],
   providers: [
@@ -26,6 +24,6 @@ import { AdminRepository } from './admin.repository';
       useClass: AdminService,
     },
   ],
-  exports: [AdminService],
+  exports: [AdminService, 'IAdminService'],
 })
 export class AdminModule {}

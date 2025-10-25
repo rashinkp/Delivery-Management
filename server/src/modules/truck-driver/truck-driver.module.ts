@@ -8,6 +8,7 @@ import { TruckDriverController } from './truck-driver.controller';
 import { TruckDriverService } from './truck-driver.service';
 import { TruckDriverRepository } from './truck-driver.repository';
 import { JwtModule } from '@nestjs/jwt';
+import { jwtConfig } from '../../common/config/jwt.config';
 
 @Module({
   imports: [
@@ -15,9 +16,8 @@ import { JwtModule } from '@nestjs/jwt';
       { name: TruckDriver.name, schema: TruckDriverSchema },
     ]),
     JwtModule.register({
+      ...jwtConfig,
       global: true,
-      secret: process.env.JWT_SECRET || 'supersecret',
-      signOptions: { expiresIn: '1d' },
     }),
   ],
   controllers: [TruckDriverController],

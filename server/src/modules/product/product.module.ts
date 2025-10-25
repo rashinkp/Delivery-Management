@@ -24,3 +24,4 @@ import { ProductRepository } from './product.repository';
 })
 export class ProductModule {}
 
+

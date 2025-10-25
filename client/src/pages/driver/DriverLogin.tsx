@@ -5,22 +5,23 @@ import FormInput from "@/components/Input";
 import { Eye, EyeOff } from "lucide-react";
 import type { FormikHelpers }  from "formik";
 import { DriverLoginSchema } from "@/validators/driver";
+import { useDriverLogin } from "@/hooks/useDriverLogin";
 
 const DriverLogin = () => {
   const initialValues = { mobile: "", password: "" };
   const [showPassword, setShowPassword] = useState(false);
 
+  const { mutateAsync: login, isPending } = useDriverLogin();
+
   const handleSubmit = async (
-  values: typeof initialValues,
+    values: typeof initialValues,
     helpers: FormikHelpers<typeof initialValues>
   ): Promise<void> => {
     try {
-      console.log("Driver Login:", values);
-      // Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await login(values);
       helpers.resetForm();
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Driver login failed:", error);
     }
   };
 
