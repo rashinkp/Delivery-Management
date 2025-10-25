@@ -3,10 +3,11 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import { jwtConfig } from '../config/jwt.config';
+import { LoggerService } from '../logger/logger.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly logger: LoggerService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
@@ -22,6 +23,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    // Log successful authentication
+    this.logger.log(
+      `🔐 Auth successful: ${payload.role} (${payload.email || payload.mobile})`,
+      'Auth'
+    );
+
     // The returned object will be available in req.user
     return {
       sub: payload.sub,

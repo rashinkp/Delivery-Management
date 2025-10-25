@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { LoggerService } from './common/logger/logger.service';
+import { RequestLoggerMiddleware } from './common/logger/request-logger.middleware';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import cookieParser from 'cookie-parser';
@@ -26,6 +27,9 @@ async function bootstrap() {
 
   // 🧾 Use your custom logger
   const logger = app.get(LoggerService);
+
+  // 📝 Request logging middleware
+  app.use(new RequestLoggerMiddleware(logger).use.bind(new RequestLoggerMiddleware(logger)));
 
   // 📦 Global request validation
   app.useGlobalPipes(

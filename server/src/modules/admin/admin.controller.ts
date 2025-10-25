@@ -21,6 +21,7 @@ import type { Response } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
+import { LoggerService } from 'src/common/logger/logger.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin')
@@ -29,6 +30,7 @@ export class AdminController {
   constructor(
     @Inject('IAdminService')
     private readonly adminService: IAdminService,
+    private readonly logger: LoggerService,
   ) {}
 
   @Public()
@@ -51,6 +53,7 @@ export class AdminController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponseDto<any>> {
     try {
+      this.logger.log(`🔑 Admin login attempt: ${dto.email}`, 'Auth');
       const { access_token } = await this.adminService.login(dto);
       res.cookie('access_token', access_token, {
         httpOnly: true,
@@ -58,8 +61,10 @@ export class AdminController {
         sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000,
       });
+      this.logger.log(`✅ Admin login successful: ${dto.email}`, 'Auth');
       return ApiResponseDto.success(null, 'Login successful');
     } catch (error) {
+      this.logger.warn(`❌ Admin login failed: ${dto.email} - ${error.message}`, 'Auth');
       return ApiResponseDto.error('Login failed', error.message);
     }
   }
