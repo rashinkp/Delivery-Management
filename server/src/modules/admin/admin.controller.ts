@@ -11,6 +11,7 @@ import {
   UseGuards,
   Get,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
@@ -47,7 +48,6 @@ export class AdminController {
 
   @Public()
   @Post('login')
-  @HttpCode(HttpStatus.OK)
   async login(
     @Body() dto: LoginAdminDto,
     @Res({ passthrough: true }) res: Response,
@@ -65,7 +65,7 @@ export class AdminController {
       return ApiResponseDto.success(null, 'Login successful');
     } catch (error) {
       this.logger.warn(`❌ Admin login failed: ${dto.email} - ${error.message}`, 'Auth');
-      return ApiResponseDto.error('Login failed', error.message);
+      throw new UnauthorizedException('Invalid credentials');
     }
   }
 

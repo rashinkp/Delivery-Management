@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ReusableForm from "@/components/Form";
 import FormInput from "@/components/Input";
+import Alert from "@/components/ui/alert";
 import { Eye, EyeOff } from "lucide-react";
 import type { FormikHelpers } from "formik";
 import { LoginSchema } from "@/validators/admin";
@@ -10,19 +11,48 @@ const AdminLogin = () => {
   const initialValues = { email: "", password: "" };
   const [showPassword, setShowPassword] = useState(false);
 
-   const { mutateAsync: login, isPending } = useAdminLogin();
+  const { mutateAsync: login, isPending, error } = useAdminLogin();
 
-   const handleSubmit = async (
-     values: typeof initialValues,
-     helpers: FormikHelpers<typeof initialValues>
-   ): Promise<void> => {
-     try {
-       await login(values);
-       helpers.resetForm();
-     } catch (error) {
-       console.error(error);
-     }
-   };
+  const handleSubmit = async (
+    values: typeof initialValues,
+    helpers: FormikHelpers<typeof initialValues>
+  ): Promise<void> => {
+    try {
+      await login(values);
+      helpers.resetForm();
+    } catch (error) {
+      console.error("Admin login failed:", error);
+      // Error is handled by the mutation and displayed below
+    }
+  };
+
+  // Extract error message from the mutation error
+  const getErrorMessage = () => {
+    if (!error) return null;
+    
+    // Handle different types of errors
+    if (error.response?.status === 401) {
+      return "Invalid email or password. Please check your credentials and try again.";
+    }
+    
+    if (error.response?.status === 404) {
+      return "Admin account not found. Please contact your administrator.";
+    }
+    
+    if (error.response?.status >= 500) {
+      return "Server error. Please try again later.";
+    }
+    
+    if (error.response?.data?.message) {
+      return error.response.data.message;
+    }
+    
+    if (error.message) {
+      return error.message;
+    }
+    
+    return "Login failed. Please try again.";
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
@@ -35,12 +65,17 @@ const AdminLogin = () => {
           </p>
         </div>
 
+        {/* Error Message */}
+        {getErrorMessage() && (
+          <Alert type="error" message={getErrorMessage()} />
+        )}
+
         {/* Form */}
         <ReusableForm
           initialValues={initialValues}
           validationSchema={LoginSchema}
           onSubmit={handleSubmit}
-          submitButtonText="Login"
+          submitButtonText={isPending ? "Logging in..." : "Login"}
         >
           {({
             values,

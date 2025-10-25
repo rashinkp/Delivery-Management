@@ -23,8 +23,10 @@ export const useAdminLogin = () => {
       await checkAuth();
       navigate("/admin/dashboard", { replace: true });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Admin login failed:", error);
+      // The error will be available in the mutation's error state
+      // We'll handle it in the component
     },
   });
 };

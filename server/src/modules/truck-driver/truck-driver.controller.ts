@@ -14,6 +14,7 @@ import {
   UseGuards,
   Res,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateTruckDriverDto } from './dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from './dto/update-truck-driver.dto';
@@ -167,7 +168,6 @@ export class TruckDriverController {
 
   @Public()
   @Post('login')
-  @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginTruckDriverDto,
     @Res({ passthrough: true }) res: Response,
@@ -187,7 +187,7 @@ export class TruckDriverController {
         'Truck driver logged in successfully',
       );
     } catch (error) {
-      return ApiResponseDto.error('Login failed', error.message);
+      throw new UnauthorizedException('Invalid credentials');
     }
   }
   

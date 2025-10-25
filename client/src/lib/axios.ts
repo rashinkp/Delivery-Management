@@ -31,13 +31,14 @@ axiosInstance.interceptors.response.use(
       // Don't redirect if we're already on a login page or if it's the /auth/me call
       const currentPath = window.location.pathname;
       const isAuthMeCall = error.config?.url?.includes('/auth/me');
+      const isLogoutCall = error.config?.url?.includes('/auth/logout');
       
       if (!currentPath.includes('/login') && !isAuthMeCall) {
         // Clear any cached auth data
         localStorage.removeItem('auth');
         sessionStorage.clear();
         
-        // Use React Router navigation instead of window.location
+        // Use window.location for 401 redirects to ensure clean state
         const isAdminRoute = currentPath.startsWith('/admin');
         const loginPath = isAdminRoute ? '/admin/login' : '/driver/login';
         

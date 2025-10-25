@@ -23,8 +23,10 @@ export const useDriverLogin = () => {
       await checkAuth();
       navigate("/driver/dashboard", { replace: true });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Driver login failed:", error);
+      // The error will be available in the mutation's error state
+      // We'll handle it in the component
     },
   });
 };

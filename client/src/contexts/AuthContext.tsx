@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '@/services/auth.service';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   _id: string;
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Start as true since we check auth on mount
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const {
     data: userData,
@@ -47,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refetchInterval: false,
   });
 
-  const isAuthenticated = !!user && !!userData;
+  const isAuthenticated = !!user && !!userData && !error;
 
   useEffect(() => {
     if (queryLoading) {
@@ -79,10 +81,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Clear all state immediately
       setUser(null);
+      setIsLoading(false);
+      
+      // Clear React Query cache completely
       queryClient.clear();
-      // Clear any cached data
       queryClient.removeQueries();
+      
+      // Invalidate the auth query to force a fresh check
+      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+      
+      // Determine the correct login page based on current route
+      const currentPath = window.location.pathname;
+      const isAdminRoute = currentPath.startsWith('/admin');
+      const loginPath = isAdminRoute ? '/admin/login' : '/driver/login';
+      
+      // Navigate to the appropriate login page
+      navigate(loginPath, { replace: true });
     }
   };
 

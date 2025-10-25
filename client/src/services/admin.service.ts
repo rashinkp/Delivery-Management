@@ -7,7 +7,4 @@ export const adminService = {
     return res.data;
   },
 
-  logout: async () => {
-    await axiosInstance.post("/admin/logout");
-  },
 };
