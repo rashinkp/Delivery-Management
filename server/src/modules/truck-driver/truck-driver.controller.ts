@@ -13,6 +13,7 @@ import {
   ValidationPipe,
   UseGuards,
   Res,
+  Req,
 } from '@nestjs/common';
 import { CreateTruckDriverDto } from './dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from './dto/update-truck-driver.dto';
@@ -164,7 +165,7 @@ export class TruckDriverController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginTruckDriverDto,
-    @Res({ passthrough: true }) res: Response, 
+    @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponseDto<any>> {
     try {
       const { token } = await this.truckDriverService.login(loginDto);
@@ -173,7 +174,7 @@ export class TruckDriverController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, 
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       return ApiResponseDto.success(
@@ -182,6 +183,17 @@ export class TruckDriverController {
       );
     } catch (error) {
       return ApiResponseDto.error('Login failed', error.message);
+    }
+  }
+  // src/truck-driver/truck-driver.controller.ts
+  @Get('me')
+  @Roles('driver')
+  async getMe(@Req() req: Request & { user: { sub: string } }) {
+    try {
+      const driver = await this.truckDriverService.findById(req.user.sub);
+      return ApiResponseDto.success(driver, 'Driver profile retrieved');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to get profile', error.message);
     }
   }
 }
