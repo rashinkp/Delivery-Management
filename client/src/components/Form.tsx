@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 const ReusableForm = <T extends {}>({
   initialValues,
   validationSchema,
+  validationContext,
   onSubmit,
   children,
   submitButtonText = "Submit",
@@ -14,6 +15,7 @@ const ReusableForm = <T extends {}>({
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
+      validationContext={validationContext}
       onSubmit={onSubmit}
     >
       {(formik: FormikProps<T>) => (

@@ -3,6 +3,7 @@ import type { FormikErrors, FormikHelpers, FormikTouched } from "formik";
 export interface ReusableFormProps<T> {
   initialValues: T;
   validationSchema?: any; // Yup schema
+  validationContext?: any; // For conditional validation
   onSubmit: (values: T, helpers: FormikHelpers<T>) => void | Promise<void>;
   children: (props: {
     values: T;

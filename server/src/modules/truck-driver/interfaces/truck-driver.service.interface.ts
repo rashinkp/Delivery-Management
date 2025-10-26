@@ -2,10 +2,13 @@ import { TruckDriverResponseDto } from '../dto/truck-driver-response.dto';
 import { CreateTruckDriverDto } from '../dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from '../dto/update-truck-driver.dto';
 import { LoginTruckDriverDto } from '../dto/login-truck-driver.dto';
+import { TruckDriverQueryDto } from '../dto/truck-driver-query.dto';
+import { PaginatedTruckDriverResponseDto } from '../dto/paginated-truck-driver-response.dto';
 
 export interface ITruckDriverService {
   create(createTruckDriverDto: CreateTruckDriverDto): Promise<TruckDriverResponseDto>;
   findAll(): Promise<TruckDriverResponseDto[]>;
+  findWithPagination(query: TruckDriverQueryDto): Promise<PaginatedTruckDriverResponseDto>;
   findById(id: string): Promise<TruckDriverResponseDto>;
   update(
     id: string,

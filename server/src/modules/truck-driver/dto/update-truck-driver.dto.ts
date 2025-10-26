@@ -1,6 +1,27 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateTruckDriverDto } from './create-truck-driver.dto';
+import { IsOptional, IsString, IsEnum } from 'class-validator';
 
-export class UpdateTruckDriverDto extends PartialType(CreateTruckDriverDto) {
+export class UpdateTruckDriverDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  mobile?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
   licenseNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsEnum(['active', 'inactive'])
+  status?: string;
 }

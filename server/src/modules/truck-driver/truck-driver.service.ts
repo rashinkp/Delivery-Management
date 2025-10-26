@@ -10,6 +10,8 @@ import { ITruckDriverService } from './interfaces/truck-driver.service.interface
 import { CreateTruckDriverDto } from './dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from './dto/update-truck-driver.dto';
 import { TruckDriverResponseDto } from './dto/truck-driver-response.dto';
+import { TruckDriverQueryDto } from './dto/truck-driver-query.dto';
+import { PaginatedTruckDriverResponseDto } from './dto/paginated-truck-driver-response.dto';
 import { TruckDriverMapper } from './mappers/truck-driver.mapper';
 import { JwtService } from '@nestjs/jwt';
 import { LoginTruckDriverDto } from './dto/login-truck-driver.dto';
@@ -56,6 +58,19 @@ export class TruckDriverService implements ITruckDriverService {
   async findAll(): Promise<TruckDriverResponseDto[]> {
     const drivers = await this.truckDriverRepository.findAll();
     return TruckDriverMapper.toResponseDtoList(drivers);
+  }
+
+  async findWithPagination(query: TruckDriverQueryDto): Promise<PaginatedTruckDriverResponseDto> {
+    const result = await this.truckDriverRepository.findWithPagination(query);
+    return {
+      data: TruckDriverMapper.toResponseDtoList(result.data),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      hasNext: result.hasNext,
+      hasPrev: result.hasPrev,
+    };
   }
 
   async findById(id: string): Promise<TruckDriverResponseDto> {

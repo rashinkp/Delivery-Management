@@ -15,9 +15,11 @@ import {
   Res,
   Req,
   UnauthorizedException,
+  Query,
 } from '@nestjs/common';
 import { CreateTruckDriverDto } from './dto/create-truck-driver.dto';
 import { UpdateTruckDriverDto } from './dto/update-truck-driver.dto';
+import { TruckDriverQueryDto } from './dto/truck-driver-query.dto';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { ITruckDriverService } from './interfaces/truck-driver.service.interface';
 import { LoginTruckDriverDto } from './dto/login-truck-driver.dto';
@@ -58,11 +60,13 @@ export class TruckDriverController {
 
   @Get()
   @Roles('admin')
-  async findAll(): Promise<ApiResponseDto<any>> {
+  async findAll(
+    @Query() query: TruckDriverQueryDto,
+  ): Promise<ApiResponseDto<any>> {
     try {
-      const drivers = await this.truckDriverService.findAll();
+      const result = await this.truckDriverService.findWithPagination(query);
       return ApiResponseDto.success(
-        drivers,
+        result,
         'Truck drivers retrieved successfully',
       );
     } catch (error) {
