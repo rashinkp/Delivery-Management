@@ -33,6 +33,9 @@ export default function DriverManagement() {
   // Dialog state
   const [openForm, setOpenForm] = useState(false);
   const [editingDriver, setEditingDriver] = useState<TruckDriver | undefined>(undefined);
+  
+  // Error state
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // API hooks with server-side pagination and filtering
   const { data: driversResponse, isLoading, error } = useTruckDrivers({
@@ -48,13 +51,37 @@ export default function DriverManagement() {
   const updateMutation = useUpdateTruckDriver();
   const deleteMutation = useDeleteTruckDriver();
 
+  // Helper function to extract error message
+  const extractErrorMessage = (error: any): string => {
+    // Check for direct error message (already extracted in mutation)
+    if (error?.message) {
+      return error.message;
+    }
+    // Check for ApiResponseDto format (used by backend)
+    if (error?.response?.data?.error) {
+      return error.response.data.error;
+    }
+    // Check for nested error message
+    if (error?.response?.data?.message) {
+      return error.response.data.message;
+    }
+    // Check for direct error message
+    if (error?.response?.message) {
+      return error.response.message;
+    }
+    return "An unexpected error occurred. Please try again.";
+  };
+
   // CRUD handlers
   const handleCreate = async (data: CreateTruckDriverDto | UpdateTruckDriverDto) => {
     try {
+      setErrorMessage(null);
       await createMutation.mutateAsync(data as CreateTruckDriverDto);
       setOpenForm(false);
     } catch (error) {
       console.error("Create driver error:", error);
+      const message = extractErrorMessage(error);
+      setErrorMessage(message);
     }
   };
 
@@ -68,8 +95,7 @@ export default function DriverManagement() {
     }
     
     try {
-      console.log('Editing driver:', editingDriver); // Debug log
-      console.log('Editing driver driverId:', editingDriver.driverId); // Debug log
+      setErrorMessage(null);
       
       // Filter out fields that shouldn't be sent to backend
       const { driverId, createdAt, updatedAt, ...allowedFields } = data as any;
@@ -80,14 +106,13 @@ export default function DriverManagement() {
         delete updateData.password;
       }
       
-      console.log('Update data being sent:', updateData); // Debug log
-      console.log('Update ID:', editingDriver.driverId); // Debug log
-      
       await updateMutation.mutateAsync({ id: editingDriver.driverId, data: updateData });
       setOpenForm(false);
       setEditingDriver(undefined);
     } catch (error) {
       console.error("Update driver error:", error);
+      const message = extractErrorMessage(error);
+      setErrorMessage(message);
     }
   };
 
@@ -109,16 +134,19 @@ export default function DriverManagement() {
 
   // Dialog handlers
   const openCreate = () => {
+    setErrorMessage(null);
     setEditingDriver(undefined);
     setOpenForm(true);
   };
 
   const openEdit = (driver: TruckDriver) => {
+    setErrorMessage(null);
     setEditingDriver(driver);
     setOpenForm(true);
   };
 
   const closeForm = () => {
+    setErrorMessage(null);
     setOpenForm(false);
     setEditingDriver(undefined);
   };
@@ -137,6 +165,9 @@ export default function DriverManagement() {
 
   // Get error message
   const getErrorMessage = () => {
+    if (errorMessage) {
+      return errorMessage;
+    }
     if (error) {
       return "Failed to load drivers. Please try again.";
     }
@@ -218,6 +249,9 @@ export default function DriverManagement() {
               {editingDriver ? "Edit Driver" : "Add New Driver"}
             </DialogTitle>
           </DialogHeader>
+          {errorMessage && (
+            <Alert type="error" message={errorMessage} />
+          )}
           <DriverForm
             initialValues={editingDriver}
             onSubmit={editingDriver ? handleUpdate : handleCreate}

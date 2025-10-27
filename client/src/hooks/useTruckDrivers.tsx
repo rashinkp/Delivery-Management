@@ -72,6 +72,10 @@ export const useCreateTruckDriver = () => {
   return useMutation({
     mutationFn: async (data: CreateTruckDriverDto): Promise<TruckDriver> => {
       const response = await axiosInstance.post('/truck-drivers', data);
+      // Check if response contains an error (backend uses ApiResponseDto format)
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || response.data.message || 'Failed to create truck driver');
+      }
       return response.data.data;
     },
     onSuccess: () => {
@@ -87,6 +91,10 @@ export const useUpdateTruckDriver = () => {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateTruckDriverDto }): Promise<TruckDriver> => {
       const response = await axiosInstance.patch(`/truck-drivers/${id}`, data);
+      // Check if response contains an error (backend uses ApiResponseDto format)
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || response.data.message || 'Failed to update truck driver');
+      }
       return response.data.data;
     },
     onSuccess: (_, { id }) => {

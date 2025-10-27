@@ -16,6 +16,7 @@ import { TruckDriverMapper } from './mappers/truck-driver.mapper';
 import { JwtService } from '@nestjs/jwt';
 import { LoginTruckDriverDto } from './dto/login-truck-driver.dto';
 import * as bcrypt from 'bcrypt';
+import { log } from 'console';
 
 @Injectable()
 export class TruckDriverService implements ITruckDriverService {
@@ -49,6 +50,11 @@ export class TruckDriverService implements ITruckDriverService {
         'Driver with this license number already exists',
       );
     }
+
+    createTruckDriverDto.password = await bcrypt.hash(
+      createTruckDriverDto.password,
+      10,
+    );
 
     const driver =
       await this.truckDriverRepository.create(createTruckDriverDto);
@@ -119,6 +125,13 @@ export class TruckDriverService implements ITruckDriverService {
       }
     }
 
+    if (updateTruckDriverDto.password) {
+      updateTruckDriverDto.password = await bcrypt.hash(
+        updateTruckDriverDto.password,
+        10,
+      );
+    } 
+
     const updatedDriver = await this.truckDriverRepository.update(
       id,
       updateTruckDriverDto,
@@ -150,6 +163,7 @@ export class TruckDriverService implements ITruckDriverService {
   async login(loginDto: LoginTruckDriverDto): Promise<{ token: string }> {
     const driver = await this.truckDriverRepository.findByMobile(loginDto.mobile);
     if (!driver) throw new UnauthorizedException('Invalid mobile or password');
+    console.log(driver);
 
     const isMatch = await bcrypt.compare(loginDto.password, driver.password);
     if (!isMatch) throw new UnauthorizedException('Invalid mobile or password');

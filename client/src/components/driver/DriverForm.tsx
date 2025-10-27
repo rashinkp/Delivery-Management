@@ -71,6 +71,7 @@ export const DriverForm = ({ initialValues, onSubmit, onClose, isLoading = false
           onClose();
         } catch (error) {
           console.error("Form submission error:", error);
+          throw error; // Re-throw so parent can handle it
         } finally {
           setSubmitting(false);
         }
