@@ -60,32 +60,60 @@ export class VendorController {
 
   @Get('location/:location')
   @Roles('admin', 'driver') // Both admin and drivers can search by location
-  findByLocation(@Param('location') location: string) {
-    return this.vendorService.findByLocation(location);
+  async findByLocation(@Param('location') location: string): Promise<ApiResponseDto<any>> {
+    try {
+      const vendors = await this.vendorService.findByLocation(location);
+      return ApiResponseDto.success(vendors, 'Vendors retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve vendors', error.message);
+    }
   }
 
   @Get('email/:email')
   @Roles('admin') // Only admin can search by email
-  findByEmail(@Param('email') email: string) {
-    return this.vendorService.findByEmail(email);
+  async findByEmail(@Param('email') email: string): Promise<ApiResponseDto<any>> {
+    try {
+      const vendor = await this.vendorService.findByEmail(email);
+      return ApiResponseDto.success(vendor, 'Vendor retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve vendor', error.message);
+    }
   }
 
   @Get('contact/:contactNumber')
   @Roles('admin') // Only admin can search by contact number
-  findByContactNumber(@Param('contactNumber') contactNumber: string) {
-    return this.vendorService.findByContactNumber(contactNumber);
+  async findByContactNumber(@Param('contactNumber') contactNumber: string): Promise<ApiResponseDto<any>> {
+    try {
+      const vendor = await this.vendorService.findByContactNumber(contactNumber);
+      return ApiResponseDto.success(vendor, 'Vendor retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve vendor', error.message);
+    }
   }
 
   @Get(':id')
   @Roles('admin', 'driver') // Both admin and drivers can view specific vendors
-  findOne(@Param('id') id: string) {
-    return this.vendorService.findById(id);
+  async findOne(@Param('id') id: string): Promise<ApiResponseDto<any>> {
+    try {
+      const vendor = await this.vendorService.findById(id);
+      return ApiResponseDto.success(vendor, 'Vendor retrieved successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to retrieve vendor', error.message);
+    }
   }
 
   @Patch(':id')
   @Roles('admin') // Only admin can update vendors
-  update(@Param('id') id: string, @Body() updateVendorDto: UpdateVendorDto) {
-    return this.vendorService.update(id, updateVendorDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateVendorDto: UpdateVendorDto,
+  ): Promise<ApiResponseDto<any>> {
+    try {
+      const vendor = await this.vendorService.update(id, updateVendorDto);
+      return ApiResponseDto.success(vendor, 'Vendor updated successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to update vendor', error.message);
+    }
   }
 
   @Delete(':id')
