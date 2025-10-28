@@ -9,6 +9,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { ProductMapper } from './mappers/product.mapper';
 import { IProductService } from './interfaces/product.service.interface';
+import { ProductQueryDto } from './dto/product-query.dto';
 
 @Injectable()
 export class ProductService implements IProductService {
@@ -62,5 +63,21 @@ export class ProductService implements IProductService {
   async findLowStock(threshold: number): Promise<ProductResponseDto[]> {
     const products = await this.productRepository.findLowStock(threshold);
     return ProductMapper.toResponseDtoList(products);
+  }
+
+  async findWithPagination(query: ProductQueryDto): Promise<{
+    data: ProductResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }> {
+    const result = await this.productRepository.findWithPagination(query);
+    return {
+      ...result,
+      data: ProductMapper.toResponseDtoList(result.data as any),
+    };
   }
 }

@@ -7,6 +7,7 @@ import { OrderResponseDto } from './dto/order-response.dto';
 import { OrderMapper } from './mappers/order.mapper';
 import { IOrderService } from './interfaces/order.service.interface';
 import { Types } from 'mongoose';
+import { OrderQueryDto } from './dto/order-query.dto';
 
 @Injectable()
 export class OrderService implements IOrderService {
@@ -45,6 +46,22 @@ export class OrderService implements IOrderService {
   async findAll(): Promise<OrderResponseDto[]> {
     const orders = await this.orderRepository.findAll();
     return OrderMapper.toResponseDtoList(orders); // Fixed: was missing parentheses
+  }
+
+  async findWithPagination(query: OrderQueryDto): Promise<{
+    data: OrderResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }> {
+    const result = await this.orderRepository.findWithPagination(query);
+    return {
+      ...result,
+      data: OrderMapper.toResponseDtoList(result.data as any),
+    };
   }
 
   async findById(id: string): Promise<OrderResponseDto> {

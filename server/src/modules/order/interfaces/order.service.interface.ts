@@ -12,4 +12,13 @@ export interface IOrderService {
   findByDriver(driverId: string): Promise<OrderResponseDto[]>;
   findByVendor(vendorId: string): Promise<OrderResponseDto[]>;
   findByStatus(status: string): Promise<OrderResponseDto[]>;
+  findWithPagination(query: import('../dto/order-query.dto').OrderQueryDto): Promise<{
+    data: OrderResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }>;
 }

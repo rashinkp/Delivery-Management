@@ -28,8 +28,21 @@ export default function Order() {
   const [errorHandler, setErrorHandler] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { data: vendors = [], isLoading: vendorsLoading } = useVendors();
-  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const [vendorPage, setVendorPage] = useState(1);
+  const [productPage, setProductPage] = useState(1);
+  const pageSize = 8;
+
+  const { data: vendorsResp, isLoading: vendorsLoading } = useVendors({
+    page: vendorPage,
+    limit: pageSize,
+  });
+  const vendors = vendorsResp?.data ?? [];
+
+  const { data: productsResp, isLoading: productsLoading } = useProducts({
+    page: productPage,
+    limit: pageSize,
+  });
+  const products = productsResp?.data ?? [];
   const createOrderMutation = useCreateOrder();
 
   const addToCart = (product: Product) => {
@@ -178,6 +191,27 @@ export default function Order() {
                 ))}
               </div>
             )}
+            {!vendorsLoading && (
+              <div className="flex items-center justify-between mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setVendorPage((p) => Math.max(1, p - 1))}
+                  disabled={!vendorsResp?.hasPrev}
+                >
+                  Prev
+                </Button>
+                <span className="text-sm text-gray-600">
+                  Page {vendorsResp?.page ?? 1} of {vendorsResp?.totalPages ?? 1}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setVendorPage((p) => p + 1)}
+                  disabled={!vendorsResp?.hasNext}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Product Selection */}
@@ -234,6 +268,28 @@ export default function Order() {
                 Please select a vendor first to view products
               </div>
             )}
+
+            {!productsLoading && selectedVendor ? (
+              <div className="flex items-center justify-between mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setProductPage((p) => Math.max(1, p - 1))}
+                  disabled={!productsResp?.hasPrev}
+                >
+                  Prev
+                </Button>
+                <span className="text-sm text-gray-600">
+                  Page {productsResp?.page ?? 1} of {productsResp?.totalPages ?? 1}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setProductPage((p) => p + 1)}
+                  disabled={!productsResp?.hasNext}
+                >
+                  Next
+                </Button>
+              </div>
+            ) : null}
           </div>
         </div>
 

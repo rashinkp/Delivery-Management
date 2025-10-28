@@ -23,7 +23,10 @@ import {
 } from "@/components/ui/dialog";
 
 const OrderManagement = () => {
-  const { data: orders = [], isLoading } = useOrders();
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const { data: ordersResp, isLoading } = useOrders({ page: pageIndex + 1, limit: pageSize });
+  const orders = ordersResp?.data ?? [];
   const [search, setSearch] = useState("");
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
   const [openView, setOpenView] = useState(false);
@@ -153,10 +156,13 @@ const OrderManagement = () => {
       <DataTable
         data={filtered}
         columns={columns}
-        pagination={{ pageIndex: 0, pageSize: 10 }}
-        totalCount={filtered.length}
+        pagination={{ pageIndex, pageSize }}
+        totalCount={ordersResp?.total ?? filtered.length}
         isLoading={isLoading}
-        onPaginationChange={() => {}}
+        onPaginationChange={({ pageIndex: pi, pageSize: ps }) => {
+          setPageIndex(pi);
+          setPageSize(ps);
+        }}
         onSortChange={() => {}}
       />
 

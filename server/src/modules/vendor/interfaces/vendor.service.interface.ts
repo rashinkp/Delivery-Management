@@ -12,4 +12,13 @@ export interface IVendorService {
   findByEmail(email: string): Promise<VendorResponseDto>;
   findByContactNumber(contactNumber: string): Promise<VendorResponseDto>;
   findByLocation(location: string): Promise<VendorResponseDto[]>;
+  findWithPagination(query: import('../dto/vendor-query.dto').VendorQueryDto): Promise<{
+    data: VendorResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }>;
 }

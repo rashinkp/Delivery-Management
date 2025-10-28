@@ -46,12 +46,12 @@ export class ProductController {
   }
 
   @Get()
-  @Roles('admin', 'driver') // Both admin and drivers can view products
-  async findAll(): Promise<ApiResponseDto<any>> {
+  @Roles('admin', 'driver')
+  async findAll(@Query() query: import('./dto/product-query.dto').ProductQueryDto): Promise<ApiResponseDto<any>> {
     try {
-      const products = await this.productService.findAll();
+      const result = await this.productService.findWithPagination(query);
       return ApiResponseDto.success(
-        products,
+        result,
         'Products retrieved successfully',
       );
     } catch (error) {

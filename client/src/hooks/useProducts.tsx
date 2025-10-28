@@ -2,25 +2,44 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import type { CreateProductDto, Product, UpdateProductDto } from "@/types/product";
 
-// Fetch all products
+export interface ProductsResponse {
+  data: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// Fetch products with pagination
 export const useProducts = (params?: {
+  page?: number;
+  limit?: number;
   category?: string;
   minPrice?: number;
   maxPrice?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }) => {
   return useQuery({
     queryKey: ['products', params],
-    queryFn: async (): Promise<Product[]> => {
+    queryFn: async (): Promise<ProductsResponse> => {
       const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
       if (params?.category) searchParams.append('category', params.category);
-      if (params?.minPrice) searchParams.append('minPrice', params.minPrice.toString());
-      if (params?.maxPrice) searchParams.append('maxPrice', params.maxPrice.toString());
+      if (typeof params?.minPrice === 'number') searchParams.append('minPrice', params.minPrice.toString());
+      if (typeof params?.maxPrice === 'number') searchParams.append('maxPrice', params.maxPrice.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+      if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
 
-      const queryString = searchParams.toString();
-      const response = await axiosInstance.get(`/products${queryString ? `?${queryString}` : ''}`);
+      const response = await axiosInstance.get(`/products?${searchParams.toString()}`);
       return response.data.data;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 

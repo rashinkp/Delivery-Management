@@ -46,11 +46,11 @@ export class OrderController {
   }
 
   @Get()
-  @Roles('admin', 'driver') // Both admin and drivers can view orders
-  async findAll(): Promise<ApiResponseDto<any>> {
+  @Roles('admin', 'driver')
+  async findAll(@Query() query: import('./dto/order-query.dto').OrderQueryDto): Promise<ApiResponseDto<any>> {
     try {
-      const orders = await this.orderService.findAll();
-      return ApiResponseDto.success(orders, 'Orders retrieved successfully');
+      const result = await this.orderService.findWithPagination(query);
+      return ApiResponseDto.success(result, 'Orders retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error('Failed to retrieve orders', error.message);
     }
@@ -98,10 +98,11 @@ export class OrderController {
   @Roles('admin', 'driver') // Both admin and drivers can filter by driver
   async findByDriver(
     @Param('driverId') driverId: string,
+    @Query() query: import('./dto/order-query.dto').OrderQueryDto,
   ): Promise<ApiResponseDto<any>> {
     try {
-      const orders = await this.orderService.findByDriver(driverId);
-      return ApiResponseDto.success(orders, 'Orders retrieved successfully');
+      const result = await this.orderService.findWithPagination({ ...query, driverId });
+      return ApiResponseDto.success(result, 'Orders retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error(
         'Failed to retrieve orders by driver',

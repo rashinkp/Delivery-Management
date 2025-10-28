@@ -11,7 +11,10 @@ import { Input } from "@/components/ui/input";
 
 export default function DriverOrders() {
   const { user } = useAuth();
-  const { data: orders = [], isLoading } = useDriverOrders(user?._id);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const { data: ordersResp, isLoading } = useDriverOrders(user?._id, { page: pageIndex + 1, limit: pageSize });
+  const orders = ordersResp?.data ?? [];
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -95,10 +98,13 @@ export default function DriverOrders() {
       <DataTable
         data={filtered}
         columns={columns}
-        pagination={{ pageIndex: 0, pageSize: 10 }}
-        totalCount={filtered.length}
+        pagination={{ pageIndex, pageSize }}
+        totalCount={ordersResp?.total ?? filtered.length}
         isLoading={isLoading}
-        onPaginationChange={() => {}}
+        onPaginationChange={({ pageIndex: pi, pageSize: ps }) => {
+          setPageIndex(pi);
+          setPageSize(ps);
+        }}
         onSortChange={() => {}}
       />
     </div>

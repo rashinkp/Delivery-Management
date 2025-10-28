@@ -69,4 +69,13 @@ export interface IProductService {
    * @returns A list of low-stock product response DTOs.
    */
   findLowStock(threshold: number): Promise<ProductResponseDto[]>;
+  findWithPagination(query: import('../dto/product-query.dto').ProductQueryDto): Promise<{
+    data: ProductResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }>;
 }

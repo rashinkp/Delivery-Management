@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { BaseRepository } from 'src/common/repositories/base.repository';
 import { Order } from 'src/schemas/order.schema';
 import { IOrderRepository } from './interfaces/order.repository.interface';
+import { OrderQueryDto } from './dto/order-query.dto';
 
 @Injectable()
 export class OrderRepository
@@ -65,5 +66,44 @@ export class OrderRepository
 
   async findByStatus(status: string): Promise<Order[]> {
     return this.populateQuery(this.orderModel.find({ orderStatus: status })).exec();
+  }
+
+  async findWithPagination(query: OrderQueryDto): Promise<{
+    data: Order[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }> {
+    const { page = 1, limit = 10, search, driverId, vendorId, status, sortBy = 'createdAt', sortOrder = 'desc' } = query;
+
+    const filter: any = {};
+    if (driverId) filter.driverId = driverId;
+    if (vendorId) filter.vendorId = vendorId;
+    if (status) filter.status = status;
+    if (search) {
+      filter.$or = [
+        { orderNumber: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+    const sort: any = {};
+    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
+    const [data, total] = await Promise.all([
+      this.populateQuery(
+        this.orderModel.find(filter).sort(sort).skip(skip).limit(limit),
+      ).exec(),
+      this.orderModel.countDocuments(filter).exec(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
+
+    return { data, total, page, limit, totalPages, hasNext, hasPrev };
   }
 }

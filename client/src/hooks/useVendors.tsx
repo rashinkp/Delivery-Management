@@ -2,15 +2,40 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import type { CreateVendorDto, Vendor, UpdateVendorDto } from "@/types/vendor";
 
-// Fetch all vendors
-export const useVendors = () => {
+export interface VendorsResponse {
+  data: Vendor[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// Fetch vendors with pagination
+export const useVendors = (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  location?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) => {
   return useQuery({
-    queryKey: ['vendors'],
-    queryFn: async (): Promise<Vendor[]> => {
-      const response = await axiosInstance.get('/vendors');
+    queryKey: ['vendors', params],
+    queryFn: async (): Promise<VendorsResponse> => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.location) searchParams.append('location', params.location);
+      if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+      if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      const qs = searchParams.toString();
+      const response = await axiosInstance.get(`/vendors${qs ? `?${qs}` : ''}`);
       return response.data.data;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 

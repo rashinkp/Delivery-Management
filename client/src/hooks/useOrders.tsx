@@ -2,12 +2,37 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import type { CreateOrderDto, Order, UpdateOrderDto } from "@/types/order";
 
-// Fetch all orders
-export const useOrders = () => {
+export interface OrdersResponse {
+  data: Order[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// Fetch all orders with pagination
+export const useOrders = (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) => {
   return useQuery({
-    queryKey: ['orders'],
-    queryFn: async (): Promise<Order[]> => {
-      const response = await axiosInstance.get('/orders');
+    queryKey: ['orders', params],
+    queryFn: async (): Promise<OrdersResponse> => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.status) searchParams.append('status', params.status);
+      if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+      if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      const qs = searchParams.toString();
+      const response = await axiosInstance.get(`/orders${qs ? `?${qs}` : ''}`);
       return response.data.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -15,11 +40,22 @@ export const useOrders = () => {
 };
 
 // Fetch orders for current driver
-export const useDriverOrders = (driverId: string | undefined) => {
+export const useDriverOrders = (
+  driverId: string | undefined,
+  params?: { page?: number; limit?: number; search?: string; status?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }
+) => {
   return useQuery({
-    queryKey: ['orders', 'driver', driverId],
-    queryFn: async (): Promise<Order[]> => {
-      const response = await axiosInstance.get(`/orders/driver/${driverId}`);
+    queryKey: ['orders', 'driver', driverId, params],
+    queryFn: async (): Promise<OrdersResponse> => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.status) searchParams.append('status', params.status);
+      if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+      if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      const qs = searchParams.toString();
+      const response = await axiosInstance.get(`/orders/driver/${driverId}${qs ? `?${qs}` : ''}`);
       return response.data.data;
     },
     enabled: !!driverId,

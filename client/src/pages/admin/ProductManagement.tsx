@@ -36,9 +36,12 @@ export default function ProductManagement() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Fetch products with optional filters
-  const { data: products = [], isLoading, error } = useProducts({
+  const { data: productsResp, isLoading, error } = useProducts({
     category: categoryFilter || undefined,
+    page: 1,
+    limit: 100,
   });
+  const products = productsResp?.data ?? [];
 
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();

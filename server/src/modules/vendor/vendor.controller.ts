@@ -45,11 +45,11 @@ export class VendorController {
   }
 
   @Get()
-  @Roles('admin', 'driver') // Both admin and drivers can view vendors
-  async findAll(): Promise<ApiResponseDto<any>> {
+  @Roles('admin', 'driver')
+  async findAll(@Query() query: import('./dto/vendor-query.dto').VendorQueryDto): Promise<ApiResponseDto<any>> {
     try {
-      const vendors = await this.vendorService.findAll();
-      return ApiResponseDto.success(vendors, 'Vendors retrieved successfully');
+      const result = await this.vendorService.findWithPagination(query);
+      return ApiResponseDto.success(result, 'Vendors retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error('Failed to retrieve vendors', error.message);
     }

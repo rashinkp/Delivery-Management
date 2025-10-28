@@ -10,6 +10,7 @@ import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { VendorResponseDto } from './dto/vendor-response.dto';
 import { VendorMapper } from './mappers/vendor.mapper';
+import { VendorQueryDto } from './dto/vendor-query.dto';
 @Injectable()
 export class VendorService implements IVendorService {
   constructor(
@@ -44,6 +45,22 @@ export class VendorService implements IVendorService {
   async findAll(): Promise<VendorResponseDto[]> {
     const vendors = await this.vendorRepository.findAll();
     return VendorMapper.toResponseDtoList(vendors);
+  }
+
+  async findWithPagination(query: VendorQueryDto): Promise<{
+    data: VendorResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }> {
+    const result = await this.vendorRepository.findWithPagination(query);
+    return {
+      ...result,
+      data: VendorMapper.toResponseDtoList(result.data as any),
+    };
   }
 
   async findById(id: string): Promise<VendorResponseDto> {

@@ -36,7 +36,8 @@ export default function VendorManagement() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Fetch vendors
-  const { data: vendors = [], isLoading, error } = useVendors();
+  const { data: vendorsResp, isLoading, error } = useVendors({ page: 1, limit: 200 });
+  const vendors = vendorsResp?.data ?? [];
 
   const createMutation = useCreateVendor();
   const updateMutation = useUpdateVendor();

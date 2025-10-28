@@ -13,4 +13,13 @@ export interface IOrderRepository extends IBaseRepository<Order> {
   findByVendorId(vendorId: string): Promise<Order[]>;
 
   findByStatus(status: string): Promise<Order[]>;
+  findWithPagination(query: import('../dto/order-query.dto').OrderQueryDto): Promise<{
+    data: Order[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }>;
 }
