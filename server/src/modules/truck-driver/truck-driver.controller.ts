@@ -179,11 +179,13 @@ export class TruckDriverController {
     try {
       const { token } = await this.truckDriverService.login(loginDto);
 
+      const isProduction = process.env.NODE_ENV === 'production';
       res.cookie('access_token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000,
+        path: '/',
       });
 
       return ApiResponseDto.success(

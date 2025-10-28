@@ -17,6 +17,7 @@ import AdminLayout from "@/components/layouts/AdminLayout";
 import DriverLayout from "@/components/layouts/DriverLayout";
 import { PublicRoute } from "@/components/PublicRoutes";
 import { ProtectedRoute } from "@/components/ProtectedRoutes";
+import NotFound from "@/pages/NotFound";
 
 const AppRoutes: FC = () => {
   return (
@@ -73,7 +74,7 @@ const AppRoutes: FC = () => {
 
       {/* ================= FALLBACK ================= */}
       <Route path="/" element={<Navigate to="/admin/login" replace />} />
-      <Route path="*" element={<div>404 Not Found</div>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

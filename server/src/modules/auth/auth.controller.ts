@@ -44,7 +44,13 @@ export class AuthController {
   @Post('logout')
   @Public()
   logout(@Res() res: Response) {
-    res.clearCookie('access_token');
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
+    });
     return res.json({ message: 'Logged out' });
   }
 }

@@ -55,11 +55,13 @@ export class AdminController {
     try {
       this.logger.log(`🔑 Admin login attempt: ${dto.email}`, 'Auth');
       const { access_token } = await this.adminService.login(dto);
+      const isProduction = process.env.NODE_ENV === 'production';
       res.cookie('access_token', access_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000,
+        path: '/',
       });
       this.logger.log(`✅ Admin login successful: ${dto.email}`, 'Auth');
       return ApiResponseDto.success(null, 'Login successful');
