@@ -17,7 +17,7 @@ type VendorActionsProps = {
   onView?: (vendor: Vendor) => void;
 };
 
-const VendorActions = ({ vendor, onEdit, onDelete, onView }: VendorActionsProps) => (
+export const VendorActions = ({ vendor, onEdit, onDelete, onView }: VendorActionsProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -46,6 +46,7 @@ const VendorActions = ({ vendor, onEdit, onDelete, onView }: VendorActionsProps)
   </DropdownMenu>
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const vendorColumns = (
   onEdit: (vendor: Vendor) => void,
   onDelete: (id: string) => void,

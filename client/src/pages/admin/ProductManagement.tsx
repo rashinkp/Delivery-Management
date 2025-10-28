@@ -28,21 +28,28 @@ export default function ProductManagement() {
   const [openForm, setOpenForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   
-  // Filter states
+  // Filter & pagination states
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">('desc');
   
   // Error state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch products with optional filters
+  // Fetch products with server-side pagination, search, and filters
   const { data: productsResp, isLoading, error } = useProducts({
+    page: pageIndex + 1,
+    limit: pageSize,
+    search: searchTerm || undefined,
     category: categoryFilter || undefined,
-    page: 1,
-    limit: 100,
+    sortBy,
+    sortOrder,
   });
   const products = productsResp?.data ?? [];
-
+  const total = productsResp?.total ?? 0;
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
   const deleteMutation = useDeleteProduct();
@@ -144,29 +151,20 @@ const handleUpdate = async (data: UpdateProductDto) => {
     setEditingProduct(undefined);
   };
 
-  // Search handler
+  // Search handler - reset to page 1 when searching
   const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
+    setPageIndex(0);
   }, []);
 
-  // Category filter handler
+  // Category filter handler - reset to page 1 when filtering
   const handleCategoryFilter = useCallback((value: string) => {
     setCategoryFilter(value);
+    setPageIndex(0);
   }, []);
 
-  // Get all unique categories from products
+  // Get unique categories from current page
   const categories = Array.from(new Set(products.map(p => p.category)));
-
-  // Filter products based on search term
-  const filteredProducts = products.filter(product => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
-    return (
-      product.name.toLowerCase().includes(search) ||
-      product.category.toLowerCase().includes(search) ||
-      product.productId.toLowerCase().includes(search)
-    );
-  });
 
   // Get error message
   const getErrorMessage = () => {
@@ -238,13 +236,25 @@ const handleUpdate = async (data: UpdateProductDto) => {
 
       {/* Data Table */}
       <DataTable
-        data={filteredProducts}
+        data={products}
         columns={productColumns(openEdit, handleDelete, handleView)}
-        pagination={{ pageIndex: 0, pageSize: 10 }}
-        totalCount={filteredProducts.length}
+        pagination={{ pageIndex, pageSize }}
+        totalCount={total}
         isLoading={isLoading}
-        onPaginationChange={() => {}}
-        onSortChange={() => {}}
+        onPaginationChange={(state) => {
+          setPageIndex(state.pageIndex);
+          setPageSize(state.pageSize);
+        }}
+        onSortChange={(sorting) => {
+          const first = Array.isArray(sorting) && sorting.length ? sorting[0] : undefined;
+          if (first) {
+            setSortBy(first.id);
+            setSortOrder(first.desc ? "desc" : "asc");
+          } else {
+            setSortBy('createdAt');
+            setSortOrder('desc');
+          }
+        }}
       />
 
       {/* Form Dialog */}

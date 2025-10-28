@@ -3,7 +3,7 @@ import type { ReusableFormProps } from "@/types/form";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 
-const ReusableForm = <T extends {}>({
+const ReusableForm = <T extends Record<string, unknown>>({
   initialValues,
   validationSchema,
   validationContext,

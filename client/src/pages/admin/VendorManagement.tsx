@@ -28,16 +28,28 @@ export default function VendorManagement() {
   const [openForm, setOpenForm] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | undefined>(undefined);
   
-  // Filter states
+  // Filter & table states
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState<string>("");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">('desc');
   
   // Error state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch vendors
-  const { data: vendorsResp, isLoading, error } = useVendors({ page: 1, limit: 200 });
+  // Fetch vendors (server-side pagination & filtering)
+  const { data: vendorsResp, isLoading, error } = useVendors({
+    page: pageIndex + 1,
+    limit: pageSize,
+    search: searchTerm || undefined,
+    location: locationFilter || undefined,
+    sortBy,
+    sortOrder,
+  });
   const vendors = vendorsResp?.data ?? [];
+  const total = vendorsResp?.total ?? 0;
 
   const createMutation = useCreateVendor();
   const updateMutation = useUpdateVendor();
@@ -83,7 +95,11 @@ export default function VendorManagement() {
     
     try {
       setErrorMessage(null);
-      await updateMutation.mutateAsync({ id: editingVendor.vendorId, data });
+      
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { vendorId, createdAt, updatedAt, ...updateData } = data as any;
+      
+      await updateMutation.mutateAsync({ id: editingVendor.vendorId, data: updateData });
       setOpenForm(false);
       setEditingVendor(undefined);
     } catch (error) {
@@ -127,31 +143,20 @@ export default function VendorManagement() {
     setEditingVendor(undefined);
   };
 
-  // Search handler
+  // Search handler - reset to page 1 when searching
   const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
+    setPageIndex(0);
   }, []);
 
-  // Location filter handler
+  // Location filter handler - reset to page 1 when filtering
   const handleLocationFilter = useCallback((value: string) => {
     setLocationFilter(value);
+    setPageIndex(0);
   }, []);
 
-  // Get all unique locations from vendors
+  // Get unique locations from current page (for a full list, consider a separate endpoint)
   const locations = Array.from(new Set(vendors.map(v => v.location)));
-
-  // Filter vendors based on search term and location
-  const filteredVendors = vendors.filter(vendor => {
-    const matchesSearch = !searchTerm || 
-      vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.contactNumber.includes(searchTerm) ||
-      vendor.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesLocation = !locationFilter || vendor.location === locationFilter;
-    
-    return matchesSearch && matchesLocation;
-  });
 
   // Get error message
   const getErrorMessage = () => {
@@ -223,13 +228,25 @@ export default function VendorManagement() {
 
       {/* Data Table */}
       <DataTable
-        data={filteredVendors}
+        data={vendors}
         columns={vendorColumns(openEdit, handleDelete, handleView)}
-        pagination={{ pageIndex: 0, pageSize: 10 }}
-        totalCount={filteredVendors.length}
+        pagination={{ pageIndex, pageSize }}
+        totalCount={total}
         isLoading={isLoading}
-        onPaginationChange={() => {}}
-        onSortChange={() => {}}
+        onPaginationChange={(state) => {
+          setPageIndex(state.pageIndex);
+          setPageSize(state.pageSize);
+        }}
+        onSortChange={(sorting) => {
+          const first = Array.isArray(sorting) && sorting.length ? sorting[0] : undefined;
+          if (first) {
+            setSortBy(first.id);
+            setSortOrder(first.desc ? "desc" : "asc");
+          } else {
+            setSortBy('createdAt');
+            setSortOrder('desc');
+          }
+        }}
       />
 
       {/* Form Dialog */}

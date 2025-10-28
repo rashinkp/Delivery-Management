@@ -25,8 +25,6 @@ export const useAdminLogin = () => {
     },
     onError: (error: any) => {
       console.error("Admin login failed:", error);
-      // The error will be available in the mutation's error state
-      // We'll handle it in the component
     },
   });
 };

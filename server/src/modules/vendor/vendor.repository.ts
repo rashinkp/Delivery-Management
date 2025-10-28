@@ -54,6 +54,10 @@ export class VendorRepository extends BaseRepository<Vendor> implements IVendorR
     const skip = (page - 1) * limit;
     const sort: any = {};
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    // Add a stable tiebreaker to avoid duplicate items across pages when values are equal
+    if (sortBy !== '_id') {
+      sort._id = sort[sortBy];
+    }
 
     const [data, total] = await Promise.all([
       this.vendorModel.find(filter).sort(sort).skip(skip).limit(limit).exec(),

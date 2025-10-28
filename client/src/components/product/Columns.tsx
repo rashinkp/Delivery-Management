@@ -17,7 +17,7 @@ type ProductActionsProps = {
   onView?: (product: Product) => void;
 };
 
-const ProductActions = ({ product, onEdit, onDelete, onView }: ProductActionsProps) => (
+export const ProductActions = ({ product, onEdit, onDelete, onView }: ProductActionsProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -46,6 +46,7 @@ const ProductActions = ({ product, onEdit, onDelete, onView }: ProductActionsPro
   </DropdownMenu>
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const productColumns = (
   onEdit: (product: Product) => void,
   onDelete: (id: string) => void,

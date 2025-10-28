@@ -98,6 +98,7 @@ export default function DriverManagement() {
       setErrorMessage(null);
       
       // Filter out fields that shouldn't be sent to backend
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { driverId, createdAt, updatedAt, ...allowedFields } = data as any;
       
       // Remove password if it's empty (for updates, password is optional)

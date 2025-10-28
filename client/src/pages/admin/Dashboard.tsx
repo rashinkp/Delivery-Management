@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Package, Store, Users, ClipboardList } from "lucide-react";
 
 const Dashboard = () => {

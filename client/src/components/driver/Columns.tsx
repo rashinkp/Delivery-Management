@@ -17,7 +17,7 @@ type DriverActionsProps = {
   onView?: (driver: TruckDriver) => void;
 };
 
-const DriverActions = ({ driver, onEdit, onDelete, onView }: DriverActionsProps) => (
+export const DriverActions = ({ driver, onEdit, onDelete, onView }: DriverActionsProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -46,6 +46,7 @@ const DriverActions = ({ driver, onEdit, onDelete, onView }: DriverActionsProps)
   </DropdownMenu>
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const driverColumns = (
   onEdit: (driver: TruckDriver) => void,
   onDelete: (id: string) => void,

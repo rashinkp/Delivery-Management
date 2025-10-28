@@ -4,7 +4,6 @@ import * as React from "react";
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -23,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import type { TableProps, PaginationState } from "@/types/table";
+import type { TableProps } from "@/types/table";
 
 export function DataTable<T>({
   data,
@@ -33,7 +32,6 @@ export function DataTable<T>({
   isLoading = false,
   onPaginationChange,
   onSortChange,
-  onFilterChange,
   rowActions,
 }: TableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -79,7 +77,7 @@ export function DataTable<T>({
                   col.id ?? (col.accessorKey as string)
                 );
                 return (
-                  <div className="truncate max-w-[200px]">{String(value) ?? "-"}</div>
+                  <div className="truncate max-w-[200px]">{value ? String(value) : "-"}</div>
                 );
               },
           meta: col.meta,

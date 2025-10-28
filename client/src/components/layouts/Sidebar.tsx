@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { useAdminLogout } from "@/hooks/useAdminLogout";
 
 const Sidebar: FC = () => {
-    const { mutate: logout, isPending } = useAdminLogout();
+    const { mutate: logout } = useAdminLogout();
 
   const navItems = [
     { label: "Dashboard", path: "/admin/dashboard" },

@@ -26,7 +26,6 @@ const OrderManagement = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const { data: ordersResp, isLoading } = useOrders({ page: pageIndex + 1, limit: pageSize });
-  const orders = ordersResp?.data ?? [];
   const [search, setSearch] = useState("");
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
   const [openView, setOpenView] = useState(false);
@@ -48,6 +47,7 @@ const OrderManagement = () => {
   };
 
   const filtered = useMemo(() => {
+    const orders = ordersResp?.data ?? [];
     if (!search) return orders;
     const q = search.toLowerCase();
     return orders.filter(
@@ -56,7 +56,7 @@ const OrderManagement = () => {
         o.driver?.name?.toLowerCase().includes(q) ||
         o.vendor?.name?.toLowerCase().includes(q)
     );
-  }, [orders, search]);
+  }, [ordersResp?.data, search]);
 
   const columns: TableColumn<Order>[] = [
     {
