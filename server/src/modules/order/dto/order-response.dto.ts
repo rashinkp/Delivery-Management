@@ -63,6 +63,9 @@ export class OrderResponseDto {
   totalAmount: number;
 
   @Expose()
+  collectedAmount: number;
+
+  @Expose()
   status: string;
 
   @Expose()
@@ -105,6 +108,8 @@ export class OrderResponseDto {
       (sum, p) => sum + p.price * p.quantity,
       0,
     );
+
+    this.collectedAmount = order.collectedAmount ?? 0;
 
     this.createdAt = order.createdAt;
     this.updatedAt = order.updatedAt;

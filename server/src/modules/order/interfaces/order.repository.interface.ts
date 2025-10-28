@@ -7,4 +7,10 @@ export interface IOrderRepository extends IBaseRepository<Order> {
   findByIdPopulated(id: string): Promise<Order | null>;
 
   updatePopulated(id: string, updateData: Partial<Order>): Promise<Order>;
+
+  findByDriverId(driverId: string): Promise<Order[]>;
+
+  findByVendorId(vendorId: string): Promise<Order[]>;
+
+  findByStatus(status: string): Promise<Order[]>;
 }

@@ -16,14 +16,23 @@ export class OrderService implements IOrderService {
   ) {}
 
   private toEntity(dto: CreateOrderDto | UpdateOrderDto): any {
+    const items = dto.products?.map((p) => ({
+      productId: new Types.ObjectId(p.productId),
+      quantity: p.quantity,
+      price: (p as any).price,
+    }));
+
+    const totalBill = items?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 0), 0);
+
     return {
-      ...dto,
+      // spread last so our normalized fields are not overridden by incoming dto
       driverId: dto.driverId ? new Types.ObjectId(dto.driverId) : undefined,
       vendorId: dto.vendorId ? new Types.ObjectId(dto.vendorId) : undefined,
-      products: dto.products?.map((p) => ({
-        productId: new Types.ObjectId(p.productId),
-        quantity: p.quantity,
-      })),
+      products: items,
+      totalBill,
+      collectedAmount: (dto as any).collectedAmount ?? 0,
+      orderStatus: (dto as any).status ?? undefined,
+      ...dto,
     };
   }
 
@@ -62,5 +71,20 @@ export class OrderService implements IOrderService {
     if (!deleted) {
       throw new NotFoundException('Failed to delete order');
     }
+  }
+
+  async findByDriver(driverId: string): Promise<OrderResponseDto[]> {
+    const orders = await this.orderRepository.findByDriverId(driverId);
+    return OrderMapper.toResponseDtoList(orders);
+  }
+
+  async findByVendor(vendorId: string): Promise<OrderResponseDto[]> {
+    const orders = await this.orderRepository.findByVendorId(vendorId);
+    return OrderMapper.toResponseDtoList(orders);
+  }
+
+  async findByStatus(status: string): Promise<OrderResponseDto[]> {
+    const orders = await this.orderRepository.findByStatus(status);
+    return OrderMapper.toResponseDtoList(orders);
   }
 }

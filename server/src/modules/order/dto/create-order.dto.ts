@@ -8,6 +8,8 @@ import {
   ValidateNested,
   ArrayMinSize,
   IsString,
+  Min,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -19,6 +21,10 @@ class OrderProductItemDto {
   @IsNumber()
   @IsPositive()
   quantity: number;
+
+  @IsNumber()
+  @IsPositive()
+  price: number;
 }
 
 export class CreateOrderDto {
@@ -36,6 +42,11 @@ export class CreateOrderDto {
   @Type(() => OrderProductItemDto)
   products: OrderProductItemDto[];
 
+  @IsOptional()
   @IsString()
   orderNumber?: string;
+
+  @IsNumber()
+  @Min(0)
+  collectedAmount: number;
 }

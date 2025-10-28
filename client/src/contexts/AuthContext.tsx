@@ -55,7 +55,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (queryLoading) {
       setIsLoading(true);
     } else if (userData) {
-      setUser(userData);
+      // Normalize driver payload (driverId -> _id) so rest of app can rely on _id
+      const normalized: any = userData?.driverId
+        ? { ...userData, _id: userData.driverId }
+        : userData;
+      setUser(normalized);
       setIsLoading(false);
     } else if (error) {
       setUser(null);

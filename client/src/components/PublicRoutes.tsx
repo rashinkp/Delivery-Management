@@ -22,8 +22,10 @@ export const PublicRoute = ({ role, children }: Props) => {
   }
 
   // Redirect to dashboard if already authenticated and role matches
-  if (isAuthenticated && user && (!role || user.role === role)) {
-    return <Navigate to={`/${user.role}/dashboard`} replace />;
+  if (isAuthenticated && user && user.role) {
+    if (!role || user.role === role) {
+      return <Navigate to={`/${user.role}/dashboard`} replace />;
+    }
   }
 
   return <>{children}</>;

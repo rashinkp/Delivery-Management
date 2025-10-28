@@ -100,9 +100,8 @@ export class OrderController {
     @Param('driverId') driverId: string,
   ): Promise<ApiResponseDto<any>> {
     try {
-      // You can add this method to IOrderService + OrderService later
-      // const orders = await this.orderService.findByDriver(driverId);
-      throw new Error('Not implemented yet');
+      const orders = await this.orderService.findByDriver(driverId);
+      return ApiResponseDto.success(orders, 'Orders retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error(
         'Failed to retrieve orders by driver',
@@ -118,7 +117,8 @@ export class OrderController {
     @Param('vendorId') vendorId: string,
   ): Promise<ApiResponseDto<any>> {
     try {
-      throw new Error('Not implemented yet');
+      const orders = await this.orderService.findByVendor(vendorId);
+      return ApiResponseDto.success(orders, 'Orders retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error(
         'Failed to retrieve orders by vendor',
@@ -134,7 +134,8 @@ export class OrderController {
     @Param('status') status: string,
   ): Promise<ApiResponseDto<any>> {
     try {
-      throw new Error('Not implemented yet');
+      const orders = await this.orderService.findByStatus(status);
+      return ApiResponseDto.success(orders, 'Orders retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error(
         'Failed to retrieve orders by status',

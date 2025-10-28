@@ -5,11 +5,13 @@ import AdminLogin from "@/pages/admin/Login";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import DriverManagement from "@/pages/admin/DriverManagement";
 import VendorManagement from "@/pages/admin/VendorManagement";
+import ProductManagement from "@/pages/admin/ProductManagement";
 import OrderManagement from "@/pages/admin/OrderManagement";
 
 import DriverLogin from "@/pages/driver/DriverLogin";
 import DriverDashboard from "@/pages/driver/Dashboard";
 import Order from "@/pages/driver/Order";
+import DriverOrders from "@/pages/driver/Orders";
 
 import AdminLayout from "@/components/layouts/AdminLayout";
 import DriverLayout from "@/components/layouts/DriverLayout";
@@ -41,6 +43,7 @@ const AppRoutes: FC = () => {
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="truck-drivers" element={<DriverManagement />} />
         <Route path="vendors" element={<VendorManagement />} />
+        <Route path="products" element={<ProductManagement />} />
         <Route path="orders" element={<OrderManagement />} />
       </Route>
 
@@ -65,6 +68,7 @@ const AppRoutes: FC = () => {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DriverDashboard />} />
         <Route path="deliveries" element={<Order />} />
+        <Route path="orders" element={<DriverOrders />} />
       </Route>
 
       {/* ================= FALLBACK ================= */}

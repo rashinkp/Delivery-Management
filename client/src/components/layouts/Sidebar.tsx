@@ -10,6 +10,7 @@ const Sidebar: FC = () => {
     { label: "Dashboard", path: "/admin/dashboard" },
     { label: "Truck Drivers", path: "/admin/truck-drivers" },
     { label: "Vendors", path: "/admin/vendors" },
+    { label: "Products", path: "/admin/products" },
     { label: "Orders", path: "/admin/orders" },
   ];
 

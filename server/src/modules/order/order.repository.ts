@@ -54,4 +54,16 @@ export class OrderRepository
   ): Promise<Order> {
     return this.updatePopulated(id, data);
   }
+
+  async findByDriverId(driverId: string): Promise<Order[]> {
+    return this.populateQuery(this.orderModel.find({ driverId })).exec();
+  }
+
+  async findByVendorId(vendorId: string): Promise<Order[]> {
+    return this.populateQuery(this.orderModel.find({ vendorId })).exec();
+  }
+
+  async findByStatus(status: string): Promise<Order[]> {
+    return this.populateQuery(this.orderModel.find({ orderStatus: status })).exec();
+  }
 }

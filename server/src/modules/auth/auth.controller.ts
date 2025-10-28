@@ -21,12 +21,12 @@ export class AuthController {
 
     if (role === 'admin') {
       const admin = await this.adminService.findById(userId);
-      return ApiResponseDto.success(admin);
+      return ApiResponseDto.success({ ...admin, role });
     }
 
     if (role === 'driver') {
       const driver = await this.driverService.findById(userId);
-      return ApiResponseDto.success(driver);
+      return ApiResponseDto.success({ ...driver, role });
     }
 
     throw new UnauthorizedException('Invalid role');

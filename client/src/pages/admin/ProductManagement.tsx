@@ -1,4 +1,4 @@
-// src/pages/admin/VendorManagement.tsx
+// src/pages/admin/ProductManagement.tsx
 "use client";
 
 import { useState, useCallback } from "react";
@@ -13,34 +13,36 @@ import { Plus, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Alert from "@/components/ui/alert";
 import { DataTable } from "@/components/Table";
-import { VendorForm } from "@/components/vendor/VendorForm";
-import { vendorColumns } from "@/components/vendor/Columns";
+import { ProductForm } from "@/components/product/ProductForm";
+import { productColumns } from "@/components/product/Columns";
 import {
-  useVendors,
-  useCreateVendor,
-  useUpdateVendor,
-  useDeleteVendor,
-} from "@/hooks/useVendors";
-import type { CreateVendorDto, Vendor, UpdateVendorDto } from "@/types/vendor";
+  useProducts,
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
+} from "@/hooks/useProducts";
+import type { CreateProductDto, Product, UpdateProductDto } from "@/types/product";
 
-export default function VendorManagement() {
+export default function ProductManagement() {
   // Dialog state
   const [openForm, setOpenForm] = useState(false);
-  const [editingVendor, setEditingVendor] = useState<Vendor | undefined>(undefined);
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
-  const [locationFilter, setLocationFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
   
   // Error state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch vendors
-  const { data: vendors = [], isLoading, error } = useVendors();
+  // Fetch products with optional filters
+  const { data: products = [], isLoading, error } = useProducts({
+    category: categoryFilter || undefined,
+  });
 
-  const createMutation = useCreateVendor();
-  const updateMutation = useUpdateVendor();
-  const deleteMutation = useDeleteVendor();
+  const createMutation = useCreateProduct();
+  const updateMutation = useUpdateProduct();
+  const deleteMutation = useDeleteProduct();
 
   // Helper function to extract error message
   const extractErrorMessage = (error: any): string => {
@@ -60,70 +62,70 @@ export default function VendorManagement() {
   };
 
   // CRUD handlers
-  const handleCreate = async (data: CreateVendorDto | UpdateVendorDto) => {
+  const handleCreate = async (data: CreateProductDto | UpdateProductDto) => {
     try {
       setErrorMessage(null);
-      await createMutation.mutateAsync(data as CreateVendorDto);
+      await createMutation.mutateAsync(data as CreateProductDto);
       setOpenForm(false);
     } catch (error) {
-      console.error("Create vendor error:", error);
+      console.error("Create product error:", error);
       const message = extractErrorMessage(error);
       setErrorMessage(message);
     }
   };
 
-  const handleUpdate = async (data: UpdateVendorDto) => {
-    if (!editingVendor) return;
+  const handleUpdate = async (data: UpdateProductDto) => {
+    if (!editingProduct) return;
     
-    if (!editingVendor.vendorId) {
-      console.error('No ID found for editing vendor:', editingVendor);
+    if (!editingProduct.productId) {
+      console.error('No ID found for editing product:', editingProduct);
       return;
     }
     
     try {
       setErrorMessage(null);
-      await updateMutation.mutateAsync({ id: editingVendor.vendorId, data });
+      await updateMutation.mutateAsync({ id: editingProduct.productId, data });
       setOpenForm(false);
-      setEditingVendor(undefined);
+      setEditingProduct(undefined);
     } catch (error) {
-      console.error("Update vendor error:", error);
+      console.error("Update product error:", error);
       const message = extractErrorMessage(error);
       setErrorMessage(message);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this vendor? This action cannot be undone.")) {
+    if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
       return;
     }
     try {
       await deleteMutation.mutateAsync(id);
     } catch (error) {
-      console.error("Delete vendor error:", error);
+      console.error("Delete product error:", error);
     }
   };
 
-  const handleView = (vendor: Vendor) => {
-    console.log("View vendor:", vendor);
+  const handleView = (product: Product) => {
+    console.log("View product:", product);
   };
 
   // Dialog handlers
   const openCreate = () => {
     setErrorMessage(null);
-    setEditingVendor(undefined);
+    setEditingProduct(undefined);
     setOpenForm(true);
   };
 
-  const openEdit = (vendor: Vendor) => {
+  const openEdit = (product: Product) => {
     setErrorMessage(null);
-    setEditingVendor(vendor);
+    setEditingProduct(product);
     setOpenForm(true);
   };
 
   const closeForm = () => {
     setErrorMessage(null);
     setOpenForm(false);
-    setEditingVendor(undefined);
+    setEditingProduct(undefined);
   };
 
   // Search handler
@@ -131,25 +133,23 @@ export default function VendorManagement() {
     setSearchTerm(value);
   }, []);
 
-  // Location filter handler
-  const handleLocationFilter = useCallback((value: string) => {
-    setLocationFilter(value);
+  // Category filter handler
+  const handleCategoryFilter = useCallback((value: string) => {
+    setCategoryFilter(value);
   }, []);
 
-  // Get all unique locations from vendors
-  const locations = Array.from(new Set(vendors.map(v => v.location)));
+  // Get all unique categories from products
+  const categories = Array.from(new Set(products.map(p => p.category)));
 
-  // Filter vendors based on search term and location
-  const filteredVendors = vendors.filter(vendor => {
-    const matchesSearch = !searchTerm || 
-      vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vendor.contactNumber.includes(searchTerm) ||
-      vendor.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesLocation = !locationFilter || vendor.location === locationFilter;
-    
-    return matchesSearch && matchesLocation;
+  // Filter products based on search term
+  const filteredProducts = products.filter(product => {
+    if (!searchTerm) return true;
+    const search = searchTerm.toLowerCase();
+    return (
+      product.name.toLowerCase().includes(search) ||
+      product.category.toLowerCase().includes(search) ||
+      product.productId.toLowerCase().includes(search)
+    );
   });
 
   // Get error message
@@ -158,16 +158,16 @@ export default function VendorManagement() {
       return errorMessage;
     }
     if (error) {
-      return "Failed to load vendors. Please try again.";
+      return "Failed to load products. Please try again.";
     }
     if (createMutation.error) {
-      return "Failed to create vendor. Please try again.";
+      return "Failed to create product. Please try again.";
     }
     if (updateMutation.error) {
-      return "Failed to update vendor. Please try again.";
+      return "Failed to update product. Please try again.";
     }
     if (deleteMutation.error) {
-      return "Failed to delete vendor. Please try again.";
+      return "Failed to delete product. Please try again.";
     }
     return null;
   };
@@ -177,14 +177,14 @@ export default function VendorManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Vendor Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Product Management</h1>
           <p className="text-gray-600 mt-2">
-            Manage your vendor profiles
+            Manage your product inventory
           </p>
         </div>
         <Button onClick={openCreate} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Add Vendor
+          Add Product
         </Button>
       </div>
 
@@ -198,7 +198,7 @@ export default function VendorManagement() {
         <div className="flex items-center gap-2 flex-1 min-w-[300px]">
           <Search className="h-4 w-4 text-gray-500" />
           <Input
-            placeholder="Search vendors by name, location, contact, or email..."
+            placeholder="Search products by name, category, or ID..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="max-w-sm"
@@ -208,13 +208,13 @@ export default function VendorManagement() {
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-gray-500" />
           <select
-            value={locationFilter}
-            onChange={(e) => handleLocationFilter(e.target.value)}
+            value={categoryFilter}
+            onChange={(e) => handleCategoryFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md text-sm"
           >
-            <option value="">All Locations</option>
-            {locations.map(location => (
-              <option key={location} value={location}>{location}</option>
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category} value={category}>{category}</option>
             ))}
           </select>
         </div>
@@ -222,10 +222,10 @@ export default function VendorManagement() {
 
       {/* Data Table */}
       <DataTable
-        data={filteredVendors}
-        columns={vendorColumns(openEdit, handleDelete, handleView)}
+        data={filteredProducts}
+        columns={productColumns(openEdit, handleDelete, handleView)}
         pagination={{ pageIndex: 0, pageSize: 10 }}
-        totalCount={filteredVendors.length}
+        totalCount={filteredProducts.length}
         isLoading={isLoading}
         onPaginationChange={() => {}}
         onSortChange={() => {}}
@@ -236,15 +236,15 @@ export default function VendorManagement() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
-              {editingVendor ? "Edit Vendor" : "Add New Vendor"}
+              {editingProduct ? "Edit Product" : "Add New Product"}
             </DialogTitle>
           </DialogHeader>
           {errorMessage && (
             <Alert type="error" message={errorMessage} />
           )}
-          <VendorForm
-            initialValues={editingVendor}
-            onSubmit={editingVendor ? handleUpdate : handleCreate}
+          <ProductForm
+            initialValues={editingProduct}
+            onSubmit={editingProduct ? handleUpdate : handleCreate}
             onClose={closeForm}
             isLoading={createMutation.isPending || updateMutation.isPending}
           />

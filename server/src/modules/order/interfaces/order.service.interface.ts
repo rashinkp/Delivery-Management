@@ -8,4 +8,8 @@ export interface IOrderService {
   findById(id: string): Promise<OrderResponseDto>;
   update(id: string, updateOrderDto: UpdateOrderDto): Promise<OrderResponseDto>;
   remove(id: string): Promise<void>;
+
+  findByDriver(driverId: string): Promise<OrderResponseDto[]>;
+  findByVendor(vendorId: string): Promise<OrderResponseDto[]>;
+  findByStatus(status: string): Promise<OrderResponseDto[]>;
 }
