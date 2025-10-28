@@ -27,7 +27,7 @@ import { AuthModule } from './modules/auth/auth.module';
     ProductModule,
     OrderModule,
     AdminModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

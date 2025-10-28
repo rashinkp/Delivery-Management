@@ -7,9 +7,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        const uri = configService.get<string>('MONGODB_URI') || 'mongodb://localhost:27017/wholesale_delivery_db';
+        const uri =
+          configService.get<string>('MONGODB_URI') ||
+          'mongodb://localhost:27017/wholesale_delivery_db';
         console.log('🔄 Connecting to MongoDB:', uri);
-        
+
         return {
           uri,
           retryAttempts: 5,

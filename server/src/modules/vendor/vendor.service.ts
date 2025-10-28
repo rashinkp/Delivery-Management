@@ -71,7 +71,10 @@ export class VendorService implements IVendorService {
     return VendorMapper.toResponseDto(vendor);
   }
 
-  async update(id: string, updateVendorDto: UpdateVendorDto): Promise<VendorResponseDto> {
+  async update(
+    id: string,
+    updateVendorDto: UpdateVendorDto,
+  ): Promise<VendorResponseDto> {
     const vendor = await this.findById(id);
 
     // Check if email is being updated and if it already exists
@@ -100,7 +103,10 @@ export class VendorService implements IVendorService {
       }
     }
 
-    const updatedVendor = await this.vendorRepository.update(id, updateVendorDto);
+    const updatedVendor = await this.vendorRepository.update(
+      id,
+      updateVendorDto,
+    );
     return VendorMapper.toResponseDto(updatedVendor);
   }
 

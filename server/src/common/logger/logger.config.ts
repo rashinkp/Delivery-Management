@@ -14,11 +14,13 @@ export const winstonConfig = {
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        winston.format.printf(({ level, message, timestamp, context, stack }) => {
-          const contextStr = context ? `[${context}] ` : '';
-          const stackStr = stack ? `\n${stack}` : '';
-          return `[${timestamp}] ${level}: ${contextStr}${message}${stackStr}`;
-        }),
+        winston.format.printf(
+          ({ level, message, timestamp, context, stack }) => {
+            const contextStr = context ? `[${context}] ` : '';
+            const stackStr = stack ? `\n${stack}` : '';
+            return `[${timestamp}] ${level}: ${contextStr}${message}${stackStr}`;
+          },
+        ),
       ),
     }),
     new winston.transports.DailyRotateFile({

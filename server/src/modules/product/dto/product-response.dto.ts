@@ -19,5 +19,3 @@ export class ProductResponseDto {
     this.updatedAt = product.updatedAt;
   }
 }
-
-

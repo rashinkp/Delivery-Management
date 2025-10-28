@@ -7,7 +7,10 @@ import { IProductRepository } from './interfaces/product.repository.interface';
 import { ProductQueryDto } from './dto/product-query.dto';
 
 @Injectable()
-export class ProductRepository extends BaseRepository<Product> implements IProductRepository {
+export class ProductRepository
+  extends BaseRepository<Product>
+  implements IProductRepository
+{
   constructor(
     @InjectModel(Product.name)
     private readonly productModel: Model<Product>,
@@ -19,16 +22,23 @@ export class ProductRepository extends BaseRepository<Product> implements IProdu
     return this.productModel.find({ category }).exec();
   }
 
-  async findByPriceRange(minPrice: number, maxPrice: number): Promise<Product[]> {
-    return this.productModel.find({ 
-      price: { $gte: minPrice, $lte: maxPrice } 
-    }).exec();
+  async findByPriceRange(
+    minPrice: number,
+    maxPrice: number,
+  ): Promise<Product[]> {
+    return this.productModel
+      .find({
+        price: { $gte: minPrice, $lte: maxPrice },
+      })
+      .exec();
   }
 
   async findLowStock(threshold: number): Promise<Product[]> {
-    return this.productModel.find({ 
-      stock: { $lte: threshold } 
-    }).exec();
+    return this.productModel
+      .find({
+        stock: { $lte: threshold },
+      })
+      .exec();
   }
 
   async findWithPagination(query: ProductQueryDto): Promise<{
@@ -40,7 +50,16 @@ export class ProductRepository extends BaseRepository<Product> implements IProdu
     hasNext: boolean;
     hasPrev: boolean;
   }> {
-    const { page = 1, limit = 10, category, minPrice, maxPrice, search, sortBy = 'createdAt', sortOrder = 'desc' } = query;
+    const {
+      page = 1,
+      limit = 10,
+      category,
+      minPrice,
+      maxPrice,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
 
     const filter: any = {};
     if (category) filter.category = category;
@@ -76,5 +95,3 @@ export class ProductRepository extends BaseRepository<Product> implements IProdu
     return { data, total, page, limit, totalPages, hasNext, hasPrev };
   }
 }
-
-

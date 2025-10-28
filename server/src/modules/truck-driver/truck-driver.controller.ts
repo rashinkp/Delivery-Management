@@ -194,7 +194,7 @@ export class TruckDriverController {
       throw new UnauthorizedException('Invalid credentials');
     }
   }
-  
+
   @Get('me')
   @Roles('driver')
   async getMe(@Req() req: Request & { user: { sub: string } }) {

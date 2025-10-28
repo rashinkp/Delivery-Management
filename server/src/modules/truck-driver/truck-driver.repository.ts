@@ -41,15 +41,22 @@ export class TruckDriverRepository
     hasNext: boolean;
     hasPrev: boolean;
   }> {
-    const { page = 1, limit = 10, search, status, sortBy = 'createdAt', sortOrder = 'desc' } = query;
-    
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
+
     // Build filter object
     const filter: any = {};
-    
+
     if (status) {
       filter.status = status;
     }
-    
+
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -66,12 +73,7 @@ export class TruckDriverRepository
 
     // Execute queries
     const [data, total] = await Promise.all([
-      this.driverModel
-        .find(filter)
-        .sort(sort)
-        .skip(skip)
-        .limit(limit)
-        .exec(),
+      this.driverModel.find(filter).sort(sort).skip(skip).limit(limit).exec(),
       this.driverModel.countDocuments(filter).exec(),
     ]);
 

@@ -66,7 +66,9 @@ export class TruckDriverService implements ITruckDriverService {
     return TruckDriverMapper.toResponseDtoList(drivers);
   }
 
-  async findWithPagination(query: TruckDriverQueryDto): Promise<PaginatedTruckDriverResponseDto> {
+  async findWithPagination(
+    query: TruckDriverQueryDto,
+  ): Promise<PaginatedTruckDriverResponseDto> {
     const result = await this.truckDriverRepository.findWithPagination(query);
     return {
       data: TruckDriverMapper.toResponseDtoList(result.data),
@@ -130,7 +132,7 @@ export class TruckDriverService implements ITruckDriverService {
         updateTruckDriverDto.password,
         10,
       );
-    } 
+    }
 
     const updatedDriver = await this.truckDriverRepository.update(
       id,
@@ -161,7 +163,9 @@ export class TruckDriverService implements ITruckDriverService {
   }
 
   async login(loginDto: LoginTruckDriverDto): Promise<{ token: string }> {
-    const driver = await this.truckDriverRepository.findByMobile(loginDto.mobile);
+    const driver = await this.truckDriverRepository.findByMobile(
+      loginDto.mobile,
+    );
     if (!driver) throw new UnauthorizedException('Invalid mobile or password');
     console.log(driver);
 

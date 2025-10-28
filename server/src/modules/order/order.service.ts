@@ -23,7 +23,10 @@ export class OrderService implements IOrderService {
       price: (p as any).price,
     }));
 
-    const totalBill = items?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 0), 0);
+    const totalBill = items?.reduce(
+      (sum, i) => sum + (i.price || 0) * (i.quantity || 0),
+      0,
+    );
 
     return {
       // spread last so our normalized fields are not overridden by incoming dto

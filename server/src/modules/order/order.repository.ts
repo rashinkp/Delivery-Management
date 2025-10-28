@@ -49,10 +49,7 @@ export class OrderRepository
     return this.findByIdPopulated(id);
   }
 
-  override async update(
-    id: string,
-    data: Partial<Order>,
-  ): Promise<Order> {
+  override async update(id: string, data: Partial<Order>): Promise<Order> {
     return this.updatePopulated(id, data);
   }
 
@@ -65,7 +62,9 @@ export class OrderRepository
   }
 
   async findByStatus(status: string): Promise<Order[]> {
-    return this.populateQuery(this.orderModel.find({ orderStatus: status })).exec();
+    return this.populateQuery(
+      this.orderModel.find({ orderStatus: status }),
+    ).exec();
   }
 
   async findWithPagination(query: OrderQueryDto): Promise<{
@@ -77,16 +76,23 @@ export class OrderRepository
     hasNext: boolean;
     hasPrev: boolean;
   }> {
-    const { page = 1, limit = 10, search, driverId, vendorId, status, sortBy = 'createdAt', sortOrder = 'desc' } = query;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      driverId,
+      vendorId,
+      status,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
 
     const filter: any = {};
     if (driverId) filter.driverId = driverId;
     if (vendorId) filter.vendorId = vendorId;
     if (status) filter.status = status;
     if (search) {
-      filter.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-      ];
+      filter.$or = [{ orderNumber: { $regex: search, $options: 'i' } }];
     }
 
     const skip = (page - 1) * limit;

@@ -1,6 +1,6 @@
-import { IBaseRepository } from "src/common/repositories/base.repository.interface";
-import { TruckDriver } from "src/schemas/truck-driver.schema";
-import { TruckDriverQueryDto } from "../dto/truck-driver-query.dto";
+import { IBaseRepository } from 'src/common/repositories/base.repository.interface';
+import { TruckDriver } from 'src/schemas/truck-driver.schema';
+import { TruckDriverQueryDto } from '../dto/truck-driver-query.dto';
 
 export interface ITruckDriverRepository extends IBaseRepository<TruckDriver> {
   findByMobile(mobile: string): Promise<TruckDriver | null>;

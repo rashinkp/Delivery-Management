@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  Inject,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import type { IProductRepository } from './interfaces/product.repository.interface';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -18,10 +14,12 @@ export class ProductService implements IProductService {
     private readonly productRepository: IProductRepository,
   ) {}
 
-  async create(createProductDto: CreateProductDto): Promise<ProductResponseDto> {
+  async create(
+    createProductDto: CreateProductDto,
+  ): Promise<ProductResponseDto> {
     const product = await this.productRepository.create(createProductDto);
     return ProductMapper.toResponseDto(product);
-  } 
+  }
 
   async findAll(): Promise<ProductResponseDto[]> {
     const products = await this.productRepository.findAll();
@@ -36,9 +34,15 @@ export class ProductService implements IProductService {
     return ProductMapper.toResponseDto(product);
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<ProductResponseDto> {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<ProductResponseDto> {
     const product = await this.findById(id);
-    const updatedProduct = await this.productRepository.update(id, updateProductDto);
+    const updatedProduct = await this.productRepository.update(
+      id,
+      updateProductDto,
+    );
     return ProductMapper.toResponseDto(updatedProduct);
   }
 
@@ -55,8 +59,14 @@ export class ProductService implements IProductService {
     return ProductMapper.toResponseDtoList(products);
   }
 
-  async findByPriceRange(minPrice: number, maxPrice: number): Promise<ProductResponseDto[]> {
-    const products = await this.productRepository.findByPriceRange(minPrice, maxPrice);
+  async findByPriceRange(
+    minPrice: number,
+    maxPrice: number,
+  ): Promise<ProductResponseDto[]> {
+    const products = await this.productRepository.findByPriceRange(
+      minPrice,
+      maxPrice,
+    );
     return ProductMapper.toResponseDtoList(products);
   }
 

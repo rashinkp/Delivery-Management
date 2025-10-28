@@ -47,7 +47,9 @@ export class OrderController {
 
   @Get()
   @Roles('admin', 'driver')
-  async findAll(@Query() query: import('./dto/order-query.dto').OrderQueryDto): Promise<ApiResponseDto<any>> {
+  async findAll(
+    @Query() query: import('./dto/order-query.dto').OrderQueryDto,
+  ): Promise<ApiResponseDto<any>> {
     try {
       const result = await this.orderService.findWithPagination(query);
       return ApiResponseDto.success(result, 'Orders retrieved successfully');
@@ -101,7 +103,10 @@ export class OrderController {
     @Query() query: import('./dto/order-query.dto').OrderQueryDto,
   ): Promise<ApiResponseDto<any>> {
     try {
-      const result = await this.orderService.findWithPagination({ ...query, driverId });
+      const result = await this.orderService.findWithPagination({
+        ...query,
+        driverId,
+      });
       return ApiResponseDto.success(result, 'Orders retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error(

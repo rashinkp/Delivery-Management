@@ -14,10 +14,10 @@ export class Order extends Document {
       {
         productId: { type: Types.ObjectId, ref: 'Product', required: true },
         quantity: { type: Number, required: true },
-        price: { type: Number, required: true }
-      }
+        price: { type: Number, required: true },
+      },
     ],
-    required: true
+    required: true,
   })
   products: Array<{
     productId: Types.ObjectId;
@@ -31,10 +31,10 @@ export class Order extends Document {
   @Prop({ required: true })
   collectedAmount: number;
 
-  @Prop({ 
-    type: String, 
-    enum: ['pending', 'delivered'], 
-    default: 'pending' 
+  @Prop({
+    type: String,
+    enum: ['pending', 'delivered'],
+    default: 'pending',
   })
   orderStatus: string;
 }

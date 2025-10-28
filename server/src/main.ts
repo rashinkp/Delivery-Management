@@ -7,7 +7,6 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import cookieParser from 'cookie-parser';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -29,7 +28,11 @@ async function bootstrap() {
   const logger = app.get(LoggerService);
 
   // 📝 Request logging middleware
-  app.use(new RequestLoggerMiddleware(logger).use.bind(new RequestLoggerMiddleware(logger)));
+  app.use(
+    new RequestLoggerMiddleware(logger).use.bind(
+      new RequestLoggerMiddleware(logger),
+    ),
+  );
 
   // 📦 Global request validation
   app.useGlobalPipes(

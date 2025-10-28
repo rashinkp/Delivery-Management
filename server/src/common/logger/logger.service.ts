@@ -1,11 +1,17 @@
 // src/common/logger/logger.service.ts
-import { Injectable, LoggerService as NestLoggerService, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  LoggerService as NestLoggerService,
+  Inject,
+} from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
-  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   log(message: string, context?: string) {
     const logMessage = context ? `[${context}] ${message}` : message;

@@ -47,13 +47,12 @@ export class ProductController {
 
   @Get()
   @Roles('admin', 'driver')
-  async findAll(@Query() query: import('./dto/product-query.dto').ProductQueryDto): Promise<ApiResponseDto<any>> {
+  async findAll(
+    @Query() query: import('./dto/product-query.dto').ProductQueryDto,
+  ): Promise<ApiResponseDto<any>> {
     try {
       const result = await this.productService.findWithPagination(query);
-      return ApiResponseDto.success(
-        result,
-        'Products retrieved successfully',
-      );
+      return ApiResponseDto.success(result, 'Products retrieved successfully');
     } catch (error) {
       return ApiResponseDto.error('Failed to retrieve products', error.message);
     }
@@ -151,4 +150,3 @@ export class ProductController {
     }
   }
 }
-

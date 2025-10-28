@@ -6,9 +6,13 @@ import { TruckDriverQueryDto } from '../dto/truck-driver-query.dto';
 import { PaginatedTruckDriverResponseDto } from '../dto/paginated-truck-driver-response.dto';
 
 export interface ITruckDriverService {
-  create(createTruckDriverDto: CreateTruckDriverDto): Promise<TruckDriverResponseDto>;
+  create(
+    createTruckDriverDto: CreateTruckDriverDto,
+  ): Promise<TruckDriverResponseDto>;
   findAll(): Promise<TruckDriverResponseDto[]>;
-  findWithPagination(query: TruckDriverQueryDto): Promise<PaginatedTruckDriverResponseDto>;
+  findWithPagination(
+    query: TruckDriverQueryDto,
+  ): Promise<PaginatedTruckDriverResponseDto>;
   findById(id: string): Promise<TruckDriverResponseDto>;
   update(
     id: string,

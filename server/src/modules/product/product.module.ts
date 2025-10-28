@@ -23,5 +23,3 @@ import { ProductRepository } from './product.repository';
   exports: ['IProductService'],
 })
 export class ProductModule {}
-
-

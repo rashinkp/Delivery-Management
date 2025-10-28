@@ -18,10 +18,10 @@ export class TruckDriver extends Document {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ 
-    type: String, 
-    enum: ['active', 'inactive'], 
-    default: 'active' 
+  @Prop({
+    type: String,
+    enum: ['active', 'inactive'],
+    default: 'active',
   })
   status: string;
 }

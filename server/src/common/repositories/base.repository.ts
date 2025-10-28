@@ -3,7 +3,9 @@ import { Model, Document } from 'mongoose';
 import { IBaseRepository } from './base.repository.interface';
 
 @Injectable()
-export abstract class BaseRepository<T extends Document> implements IBaseRepository<T> {
+export abstract class BaseRepository<T extends Document>
+  implements IBaseRepository<T>
+{
   constructor(protected readonly model: Model<T>) {}
 
   async create(entity: Partial<T>): Promise<T> {
@@ -19,7 +21,9 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
   }
 
   async update(id: string, updateData: Partial<T>): Promise<T> {
-    return this.model.findByIdAndUpdate(id, updateData, { new: true }).exec() as Promise<T>;
+    return this.model
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .exec() as Promise<T>;
   }
 
   async delete(id: string): Promise<boolean> {

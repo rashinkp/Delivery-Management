@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Log successful authentication
     this.logger.log(
       `🔐 Auth successful: ${payload.role} (${payload.email || payload.mobile})`,
-      'Auth'
+      'Auth',
     );
 
     // The returned object will be available in req.user

@@ -25,7 +25,7 @@ export class AdminService implements IAdminService {
     const existing = await this.adminRepo.findByEmail(createAdminDto.email);
     if (existing) throw new UnauthorizedException('Admin already exists');
 
-    const hashedPassword = await bcrypt.hash(createAdminDto.password, 10); 
+    const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
     createAdminDto.password = hashedPassword;
 
     const admin = await this.adminRepo.create(createAdminDto);

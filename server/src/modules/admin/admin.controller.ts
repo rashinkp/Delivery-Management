@@ -64,7 +64,10 @@ export class AdminController {
       this.logger.log(`✅ Admin login successful: ${dto.email}`, 'Auth');
       return ApiResponseDto.success(null, 'Login successful');
     } catch (error) {
-      this.logger.warn(`❌ Admin login failed: ${dto.email} - ${error.message}`, 'Auth');
+      this.logger.warn(
+        `❌ Admin login failed: ${dto.email} - ${error.message}`,
+        'Auth',
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
   }
@@ -80,4 +83,3 @@ export class AdminController {
     }
   }
 }
-

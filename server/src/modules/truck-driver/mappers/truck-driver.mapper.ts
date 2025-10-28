@@ -7,6 +7,6 @@ export class TruckDriverMapper {
   }
 
   static toResponseDtoList(drivers: TruckDriver[]): TruckDriverResponseDto[] {
-    return drivers.map(driver => this.toResponseDto(driver));
+    return drivers.map((driver) => this.toResponseDto(driver));
   }
 }

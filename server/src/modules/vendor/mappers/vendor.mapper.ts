@@ -7,6 +7,6 @@ export class VendorMapper {
   }
 
   static toResponseDtoList(vendors: Vendor[]): VendorResponseDto[] {
-    return vendors.map(vendor => this.toResponseDto(vendor));
+    return vendors.map((vendor) => this.toResponseDto(vendor));
   }
 }

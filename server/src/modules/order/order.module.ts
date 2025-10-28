@@ -1,15 +1,13 @@
-import { Module } from "@nestjs/common";
-import { MongooseModule } from "@nestjs/mongoose";
-import { OrderSchema } from "src/schemas/order.schema";
-import { OrderController } from "./order.controller";
-import { OrderRepository } from "./order.repository";
-import { OrderService } from "./order.service";
-
-
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { OrderSchema } from 'src/schemas/order.schema';
+import { OrderController } from './order.controller';
+import { OrderRepository } from './order.repository';
+import { OrderService } from './order.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name: 'Order', schema: OrderSchema }]),
+    MongooseModule.forFeature([{ name: 'Order', schema: OrderSchema }]),
   ],
   controllers: [OrderController],
   providers: [
@@ -19,10 +17,9 @@ import { OrderService } from "./order.service";
     },
     {
       provide: 'IOrderService',
-      useClass:OrderService,
-    }
+      useClass: OrderService,
+    },
   ],
   exports: ['IOrderService'],
 })
-
 export class OrderModule {}

@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsUrl,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -21,4 +27,3 @@ export class CreateProductDto {
   @IsPositive()
   stock: number;
 }
-

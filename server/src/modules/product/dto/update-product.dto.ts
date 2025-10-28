@@ -8,4 +8,3 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   image?: string;
   stock?: number;
 }
-

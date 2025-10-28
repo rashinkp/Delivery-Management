@@ -21,7 +21,6 @@ import type { IVendorService } from './interfaces/vendor.service.interface';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
- 
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('vendors')
@@ -35,7 +34,9 @@ export class VendorController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @Roles('admin') // Only admin can create vendors
-  async create(@Body() createVendorDto: CreateVendorDto): Promise<ApiResponseDto<any>> {
+  async create(
+    @Body() createVendorDto: CreateVendorDto,
+  ): Promise<ApiResponseDto<any>> {
     try {
       const vendor = await this.vendorService.create(createVendorDto);
       return ApiResponseDto.success(vendor, 'Vendor created successfully');
@@ -46,7 +47,9 @@ export class VendorController {
 
   @Get()
   @Roles('admin', 'driver')
-  async findAll(@Query() query: import('./dto/vendor-query.dto').VendorQueryDto): Promise<ApiResponseDto<any>> {
+  async findAll(
+    @Query() query: import('./dto/vendor-query.dto').VendorQueryDto,
+  ): Promise<ApiResponseDto<any>> {
     try {
       const result = await this.vendorService.findWithPagination(query);
       return ApiResponseDto.success(result, 'Vendors retrieved successfully');

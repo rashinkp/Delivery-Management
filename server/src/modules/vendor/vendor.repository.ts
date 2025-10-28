@@ -7,7 +7,10 @@ import { IVendorRepository } from './interfaces/vendor.repository.interface';
 import { VendorQueryDto } from './dto/vendor-query.dto';
 
 @Injectable()
-export class VendorRepository extends BaseRepository<Vendor> implements IVendorRepository {
+export class VendorRepository
+  extends BaseRepository<Vendor>
+  implements IVendorRepository
+{
   constructor(
     @InjectModel(Vendor.name)
     private readonly vendorModel: Model<Vendor>,
@@ -36,7 +39,14 @@ export class VendorRepository extends BaseRepository<Vendor> implements IVendorR
     hasNext: boolean;
     hasPrev: boolean;
   }> {
-    const { page = 1, limit = 10, search, location, sortBy = 'createdAt', sortOrder = 'desc' } = query;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      location,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
 
     const filter: any = {};
     if (location) {

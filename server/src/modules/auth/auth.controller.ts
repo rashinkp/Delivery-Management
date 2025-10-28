@@ -1,5 +1,14 @@
 // src/auth/auth.controller.ts
-import { Controller, Get, Inject, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import type { IAdminService } from '../admin/interfaces/admin.service.interface';
 import type { ITruckDriverService } from '../truck-driver/interfaces/truck-driver.service.interface';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
