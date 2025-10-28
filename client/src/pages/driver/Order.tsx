@@ -1,10 +1,16 @@
-
 // src/pages/driver/Order.tsx
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, ShoppingCart, Trash2, Package, Store } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  ShoppingCart,
+  Trash2,
+  Package,
+  Store,
+} from "lucide-react";
 import Alert from "@/components/ui/alert";
 import { useVendors } from "@/hooks/useVendors";
 import { useProducts } from "@/hooks/useProducts";
@@ -29,42 +35,51 @@ export default function Order() {
   const addToCart = (product: Product) => {
     setErrorHandler(null);
     setSuccessMessage(null);
-    
-    const existingItem = cart.find(item => item.productId === product.productId);
-    
+
+    const existingItem = cart.find(
+      (item) => item.productId === product.productId
+    );
+
     if (existingItem) {
-      setCart(cart.map(item => 
-        item.productId === product.productId 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
+      setCart(
+        cart.map((item) =>
+          item.productId === product.productId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
     } else {
-      setCart([...cart, {
-        productId: product.productId,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        image: product.image
-      }]);
+      setCart([
+        ...cart,
+        {
+          productId: product.productId,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          image: product.image,
+        },
+      ]);
     }
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(cart.filter(item => item.productId !== productId));
+    setCart(cart.filter((item) => item.productId !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) {
       removeFromCart(productId);
     } else {
-      setCart(cart.map(item => 
-        item.productId === productId ? { ...item, quantity } : item
-      ));
+      setCart(
+        cart.map((item) =>
+          item.productId === productId ? { ...item, quantity } : item
+        )
+      );
     }
   };
 
   const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
   const handleCreateOrder = async () => {
@@ -90,12 +105,12 @@ export default function Order() {
       await createOrderMutation.mutateAsync({
         driverId: user._id,
         vendorId: selectedVendor.vendorId,
-        products: cart.map(item => ({
+        products: cart.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
         })),
-        collectedAmount: Number(collectedAmount || 0)
+        collectedAmount: Number(collectedAmount || 0),
       });
 
       setSuccessMessage("Order created successfully!");
@@ -103,7 +118,9 @@ export default function Order() {
       setSelectedVendor(null);
     } catch (error: any) {
       console.error("Create order error:", error);
-      setErrorHandler(error?.message || "Failed to create order. Please try again.");
+      setErrorHandler(
+        error?.message || "Failed to create order. Please try again."
+      );
     }
   };
 
@@ -130,7 +147,7 @@ export default function Order() {
               <Store className="h-5 w-5 text-blue-600" />
               <h2 className="text-xl font-semibold">Select Vendor</h2>
             </div>
-            
+
             {vendorsLoading ? (
               <div className="text-center py-8">Loading vendors...</div>
             ) : (
@@ -144,13 +161,19 @@ export default function Order() {
                     }}
                     className={`p-4 border-2 rounded-lg text-left transition ${
                       selectedVendor?.vendorId === vendor.vendorId
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    <h3 className="font-semibold text-gray-900">{vendor.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{vendor.location}</p>
-                    <p className="text-sm text-gray-500">{vendor.contactNumber}</p>
+                    <h3 className="font-semibold text-gray-900">
+                      {vendor.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {vendor.location}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {vendor.contactNumber}
+                    </p>
                   </button>
                 ))}
               </div>
@@ -168,31 +191,43 @@ export default function Order() {
               <div className="text-center py-8">Loading products...</div>
             ) : selectedVendor ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.filter(p => p.stock > 0).map((product) => (
-                  <div key={product.productId} className="border rounded-lg p-4 hover:shadow-md transition">
-                    <img 
-                      src={product.image} 
-                      alt={product.name}
-                      className="w-full h-32 object-cover rounded mb-2"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150';
-                      }}
-                    />
-                    <h3 className="font-semibold text-sm">{product.name}</h3>
-                    <p className="text-xs text-gray-500 mb-1">{product.category}</p>
-                    <p className="text-sm font-bold text-green-600">${product.price.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">Stock: {product.stock}</p>
-                    <Button 
-                      onClick={() => addToCart(product)}
-                      size="sm"
-                      className="w-full mt-2"
-                      disabled={product.stock === 0}
+                {products
+                  .filter((p) => p.stock > 0)
+                  .map((product) => (
+                    <div
+                      key={product.productId}
+                      className="border rounded-lg p-4 hover:shadow-md transition"
                     >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add to Cart
-                    </Button>
-                  </div>
-                ))}
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-32 object-contain rounded mb-2"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "https://via.placeholder.com/150";
+                        }}
+                      />
+                      <h3 className="font-semibold text-sm">{product.name}</h3>
+                      <p className="text-xs text-gray-500 mb-1">
+                        {product.category}
+                      </p>
+                      <p className="text-sm font-bold text-green-600">
+                        ${product.price.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Stock: {product.stock}
+                      </p>
+                      <Button
+                        onClick={() => addToCart(product)}
+                        size="sm"
+                        className="w-full mt-2"
+                        disabled={product.stock === 0}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add to Cart
+                      </Button>
+                    </div>
+                  ))}
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
@@ -223,7 +258,9 @@ export default function Order() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <h4 className="font-semibold text-sm">{item.name}</h4>
-                        <p className="text-xs text-gray-600">${item.price.toFixed(2)} each</p>
+                        <p className="text-xs text-gray-600">
+                          ${item.price.toFixed(2)} each
+                        </p>
                       </div>
                       <Button
                         variant="ghost"
@@ -239,7 +276,9 @@ export default function Order() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity - 1)
+                          }
                           className="h-8 w-8 p-0"
                         >
                           <Minus className="h-4 w-4" />
@@ -248,13 +287,17 @@ export default function Order() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity + 1)
+                          }
                           className="h-8 w-8 p-0"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
-                      <span className="font-bold">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-bold">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -263,7 +306,9 @@ export default function Order() {
 
             <div className="border-t pt-4 mt-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <label className="text-sm text-gray-700">Collected Amount</label>
+                <label className="text-sm text-gray-700">
+                  Collected Amount
+                </label>
                 <input
                   type="number"
                   min="0"
@@ -277,12 +322,18 @@ export default function Order() {
                 <span>Total:</span>
                 <span>${calculateTotal().toFixed(2)}</span>
               </div>
-              <Button 
+              <Button
                 onClick={handleCreateOrder}
                 className="w-full"
-                disabled={cart.length === 0 || !selectedVendor || createOrderMutation.isPending}
+                disabled={
+                  cart.length === 0 ||
+                  !selectedVendor ||
+                  createOrderMutation.isPending
+                }
               >
-                {createOrderMutation.isPending ? "Creating Order..." : "Create Order"}
+                {createOrderMutation.isPending
+                  ? "Creating Order..."
+                  : "Create Order"}
               </Button>
             </div>
           </div>

@@ -17,19 +17,63 @@ export default function DriverOrders() {
   const filtered = useMemo(() => {
     if (!search) return orders;
     const q = search.toLowerCase();
-    return orders.filter(o =>
-      o.orderNumber?.toLowerCase().includes(q) ||
-      o.vendor?.name?.toLowerCase().includes(q)
+    return orders.filter(
+      (o) =>
+        o.orderNumber?.toLowerCase().includes(q) ||
+        o.vendor?.name?.toLowerCase().includes(q)
     );
   }, [orders, search]);
 
   const columns: TableColumn<Order>[] = [
-    { accessorKey: "orderNumber", header: "Order #", meta: { sortable: true } },
-    { accessorKey: "vendor.name", header: "Vendor", cell: ({ row }) => <span>{row.original.vendor?.name}</span> },
-    { accessorKey: "totalAmount", header: "Total", cell: ({ row }) => <span>${row.original.totalAmount.toFixed(2)}</span> },
-    { accessorKey: "collectedAmount", header: "Collected", cell: ({ row }) => <span>${(row.original.collectedAmount ?? 0).toFixed(2)}</span> },
-    { accessorKey: "status", header: "Status", cell: ({ row }) => <span className={`px-2 py-0.5 rounded-full text-xs ${row.original.status === 'delivered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{row.original.status || 'pending'}</span> },
-    { accessorKey: "createdAt", header: "Created", cell: ({ row }) => <span>{new Date(row.original.createdAt || '').toLocaleString()}</span> },
+    {
+      accessorKey: "orderId",
+      header: "Order ID",
+      meta: { sortable: true },
+      cell: ({ row }) => {
+        const id = row.original.orderId;
+        const shortId = id ? id.slice(-6).toUpperCase() : "N/A";
+        return <span>{shortId}</span>;
+      },
+    },
+    {
+      accessorKey: "vendor",
+      header: "Vendor",
+      cell: ({ row }) => <span>{row.original.vendor?.name}</span>,
+    },
+    {
+      accessorKey: "totalAmount",
+      header: "Total",
+      cell: ({ row }) => <span>${row.original.totalAmount.toFixed(2)}</span>,
+    },
+    {
+      accessorKey: "collectedAmount",
+      header: "Collected",
+      cell: ({ row }) => (
+        <span>${(row.original.collectedAmount ?? 0).toFixed(2)}</span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <span
+          className={`px-2 py-0.5 rounded-full text-xs ${
+            row.original.status === "delivered"
+              ? "bg-green-100 text-green-700"
+              : "bg-yellow-100 text-yellow-700"
+          }`}
+        >
+          {row.original.status || "pending"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created",
+      cell: ({ row }) => (
+        <span>{new Date(row.original.createdAt || "").toLocaleString()}</span>
+      ),
+    },
   ];
 
   return (
@@ -40,7 +84,12 @@ export default function DriverOrders() {
       </div>
 
       <div className="flex items-center gap-3">
-        <Input placeholder="Search by order # or vendor" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-md" />
+        <Input
+          placeholder="Search by order # or vendor"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-md"
+        />
       </div>
 
       <DataTable
@@ -55,5 +104,3 @@ export default function DriverOrders() {
     </div>
   );
 }
-
-

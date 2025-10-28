@@ -73,26 +73,39 @@ export default function ProductManagement() {
       setErrorMessage(message);
     }
   };
+const handleUpdate = async (data: UpdateProductDto) => {
+  if (!editingProduct) return;
 
-  const handleUpdate = async (data: UpdateProductDto) => {
-    if (!editingProduct) return;
-    
-    if (!editingProduct.productId) {
-      console.error('No ID found for editing product:', editingProduct);
-      return;
-    }
-    
-    try {
-      setErrorMessage(null);
-      await updateMutation.mutateAsync({ id: editingProduct.productId, data });
-      setOpenForm(false);
-      setEditingProduct(undefined);
-    } catch (error) {
-      console.error("Update product error:", error);
-      const message = extractErrorMessage(error);
-      setErrorMessage(message);
-    }
-  };
+  if (!editingProduct.productId) {
+    console.error("No ID found for editing product:", editingProduct);
+    return;
+  }
+
+  try {
+    setErrorMessage(null);
+
+    // ✅ Remove fields not needed by backend
+    const cleanedData: UpdateProductDto = {
+      name: data.name,
+      price: data.price,
+      category: data.category,
+      image: data.image,
+      stock: data.stock,
+    };
+
+    await updateMutation.mutateAsync({
+      id: editingProduct.productId,
+      data: cleanedData,
+    });
+    setOpenForm(false);
+    setEditingProduct(undefined);
+  } catch (error) {
+    console.error("Update product error:", error);
+    const message = extractErrorMessage(error);
+    setErrorMessage(message);
+  }
+};
+
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
