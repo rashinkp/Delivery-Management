@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useDriverOrders, useDeliverOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
+import { useDriverOrders, useDeliverOrder } from "@/hooks/useOrders";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataTable } from "@/components/Table";
 import type { TableColumn } from "@/types/table";
@@ -17,7 +17,6 @@ export default function DriverOrders() {
   const { data: ordersResp, isLoading } = useDriverOrders(user?._id, { page: pageIndex + 1, limit: pageSize });
   const [search, setSearch] = useState("");
   const deliverMutation = useDeliverOrder();
-  const updateStatusMutation = useUpdateOrderStatus();
 
   const filtered = useMemo(() => {
     const orders = ordersResp?.data ?? [];
@@ -81,7 +80,7 @@ export default function DriverOrders() {
       ),
     },
   {
-    accessorKey: "actions",
+    id: "actions",
     header: "Actions",
     cell: ({ row }) => {
       const order = row.original;
