@@ -23,4 +23,12 @@ export interface IOrderService {
     hasNext: boolean;
     hasPrev: boolean;
   }>;
+
+  updateStatus(
+    id: string,
+    status: 'pending' | 'delivered',
+    driverId: string,
+  ): Promise<OrderResponseDto>;
+
+  deliver(id: string, driverId: string): Promise<OrderResponseDto>;
 }

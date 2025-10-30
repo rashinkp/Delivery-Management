@@ -2,12 +2,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useDriverOrders } from "@/hooks/useOrders";
+import { useDriverOrders, useDeliverOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataTable } from "@/components/Table";
 import type { TableColumn } from "@/types/table";
 import type { Order } from "@/types/order";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function DriverOrders() {
   const { user } = useAuth();
@@ -15,6 +16,8 @@ export default function DriverOrders() {
   const [pageSize, setPageSize] = useState(10);
   const { data: ordersResp, isLoading } = useDriverOrders(user?._id, { page: pageIndex + 1, limit: pageSize });
   const [search, setSearch] = useState("");
+  const deliverMutation = useDeliverOrder();
+  const updateStatusMutation = useUpdateOrderStatus();
 
   const filtered = useMemo(() => {
     const orders = ordersResp?.data ?? [];
@@ -77,6 +80,33 @@ export default function DriverOrders() {
         <span>{new Date(row.original.createdAt || "").toLocaleString()}</span>
       ),
     },
+  {
+    accessorKey: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const order = row.original;
+      const isDelivered = order.status === "delivered";
+      return (
+        <div className="flex gap-2">
+          {!isDelivered && (
+            <Button
+              size="sm"
+              variant="default"
+              onClick={async () => {
+                try {
+                  await deliverMutation.mutateAsync(order.orderId);
+                } catch (e) {
+                  console.error("Failed to deliver order", e);
+                }
+              }}
+            >
+              Mark Delivered
+            </Button>
+          )}
+        </div>
+      );
+    },
+  },
   ];
 
   return (

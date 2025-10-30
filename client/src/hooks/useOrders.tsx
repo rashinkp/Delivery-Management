@@ -129,3 +129,47 @@ export const useDeleteOrder = () => {
   });
 };
 
+// Driver: update order status
+export const useUpdateOrderStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'pending' | 'delivered' }): Promise<Order> => {
+      const response = await axiosInstance.patch(`/orders/${id}/status`, { status });
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || response.data.message || 'Failed to update order status');
+      }
+      return response.data.data;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order', id] });
+    },
+    onError: (error) => {
+      console.error('Error updating order status:', error);
+    },
+  });
+};
+
+// Driver: mark order delivered
+export const useDeliverOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<Order> => {
+      const response = await axiosInstance.patch(`/orders/${id}/deliver`);
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || response.data.message || 'Failed to deliver order');
+      }
+      return response.data.data;
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order', id] });
+    },
+    onError: (error) => {
+      console.error('Error delivering order:', error);
+    },
+  });
+};
+

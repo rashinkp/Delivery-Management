@@ -13,6 +13,7 @@ import {
   ValidationPipe,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -21,6 +22,7 @@ import type { IOrderService } from './interfaces/order.service.interface';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
+import type { Request } from 'express';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('orders')
@@ -92,6 +94,43 @@ export class OrderController {
       return ApiResponseDto.success(null, 'Order deleted successfully');
     } catch (error) {
       return ApiResponseDto.error('Failed to delete order', error.message);
+    }
+  }
+
+  // Driver-specific: update status with validation and assignment check
+  @Patch(':id/status')
+  @Roles('driver')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: { status: 'pending' | 'delivered' },
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    try {
+      const driverId = (req as any).user?.sub;
+      const order = await this.orderService.updateStatus(
+        id,
+        body.status,
+        driverId,
+      );
+      return ApiResponseDto.success(order, 'Order status updated');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to update status', error.message);
+    }
+  }
+
+  // Driver-specific: quick deliver action
+  @Patch(':id/deliver')
+  @Roles('driver')
+  async deliver(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<ApiResponseDto<any>> {
+    try {
+      const driverId = (req as any).user?.sub;
+      const order = await this.orderService.deliver(id, driverId);
+      return ApiResponseDto.success(order, 'Order delivered');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to deliver order', error.message);
     }
   }
 

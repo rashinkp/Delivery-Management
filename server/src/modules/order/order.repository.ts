@@ -90,7 +90,7 @@ export class OrderRepository
     const filter: any = {};
     if (driverId) filter.driverId = driverId;
     if (vendorId) filter.vendorId = vendorId;
-    if (status) filter.status = status;
+    if (status) filter.orderStatus = status;
     if (search) {
       filter.$or = [{ orderNumber: { $regex: search, $options: 'i' } }];
     }

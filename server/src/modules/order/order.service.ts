@@ -1,5 +1,11 @@
 // src/orders/order.service.ts
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import type { IOrderRepository } from './interfaces/order.repository.interface';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -106,5 +112,39 @@ export class OrderService implements IOrderService {
   async findByStatus(status: string): Promise<OrderResponseDto[]> {
     const orders = await this.orderRepository.findByStatus(status);
     return OrderMapper.toResponseDtoList(orders);
+  }
+
+  // Driver-specific status update with validation
+  async updateStatus(
+    id: string,
+    status: 'pending' | 'delivered',
+    driverId: string,
+  ): Promise<OrderResponseDto> {
+    if (!['pending', 'delivered'].includes(status)) {
+      throw new BadRequestException('Invalid status');
+    }
+
+    const order = await this.orderRepository.findById(id);
+    if (!order) throw new NotFoundException('Order not found');
+
+    const orderDriverId = (order as any).driverId?._id
+      ? (order as any).driverId._id.toString()
+      : (order as any).driverId?.toString?.() ?? String((order as any).driverId);
+    const isAssignedDriver = orderDriverId === driverId;
+    if (!isAssignedDriver) {
+      throw new ForbiddenException('Not authorized to update this order');
+    }
+
+    if (order.orderStatus === 'delivered' && status === 'pending') {
+      throw new BadRequestException('Cannot revert delivered order to pending');
+    }
+
+    const updated = await this.orderRepository.update(id, { orderStatus: status } as any);
+    return OrderMapper.toResponseDto(updated);
+  }
+
+  // Convenience method for drivers to mark delivered
+  async deliver(id: string, driverId: string): Promise<OrderResponseDto> {
+    return this.updateStatus(id, 'delivered', driverId);
   }
 }

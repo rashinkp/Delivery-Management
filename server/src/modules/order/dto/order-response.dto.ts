@@ -77,7 +77,7 @@ export class OrderResponseDto {
   constructor(order: any) {
     this.orderId = order._id?.toString() || order.id?.toString();
     this.orderNumber = order.orderNumber;
-    this.status = order.status || 'PENDING';
+    this.status = order.orderStatus || 'pending';
 
     // Driver
     this.driver = {
