@@ -1,6 +1,8 @@
 export interface TruckDriver {
   driverId: string;
   name: string;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
   mobile: string;
   address: string;
   licenseNumber: string;

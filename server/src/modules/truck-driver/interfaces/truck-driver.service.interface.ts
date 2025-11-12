@@ -19,6 +19,7 @@ export interface ITruckDriverService {
     updateTruckDriverDto: UpdateTruckDriverDto,
   ): Promise<TruckDriverResponseDto>;
   remove(id: string): Promise<void>;
+  restore(id: string): Promise<void>;
   findByStatus(status: string): Promise<TruckDriverResponseDto[]>;
   findByMobile(mobile: string): Promise<TruckDriverResponseDto>;
   login(loginDto: LoginTruckDriverDto): Promise<{ token: string }>;

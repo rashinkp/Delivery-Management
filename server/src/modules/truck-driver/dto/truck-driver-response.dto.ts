@@ -5,6 +5,8 @@ export class TruckDriverResponseDto {
   address: string;
   licenseNumber: string;
   status: string;
+  isDeleted: boolean;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -15,6 +17,8 @@ export class TruckDriverResponseDto {
     this.address = driver.address;
     this.licenseNumber = driver.licenseNumber;
     this.status = driver.status;
+    this.isDeleted = !!driver.isDeleted;
+    this.deletedAt = driver.deletedAt ?? null;
     this.createdAt = driver.createdAt;
     this.updatedAt = driver.updatedAt;
   }

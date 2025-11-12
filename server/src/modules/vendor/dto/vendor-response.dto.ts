@@ -5,6 +5,8 @@ export class VendorResponseDto {
   contactNumber: string;
   email: string;
   address: string;
+  isDeleted: boolean;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -15,6 +17,8 @@ export class VendorResponseDto {
     this.contactNumber = vendor.contactNumber;
     this.email = vendor.email;
     this.address = vendor.address;
+    this.isDeleted = !!vendor.isDeleted;
+    this.deletedAt = vendor.deletedAt ?? null;
     this.createdAt = vendor.createdAt;
     this.updatedAt = vendor.updatedAt;
   }

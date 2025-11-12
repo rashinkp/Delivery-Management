@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye, RotateCcw } from "lucide-react";
 import type { TruckDriver } from "@/types/truckDriver";
 
 type DriverActionsProps = {
@@ -15,9 +15,10 @@ type DriverActionsProps = {
   onEdit: (driver: TruckDriver) => void;
   onDelete: (id: string) => void;
   onView?: (driver: TruckDriver) => void;
+  onRestore?: (id: string) => void;
 };
 
-export const DriverActions = ({ driver, onEdit, onDelete, onView }: DriverActionsProps) => (
+export const DriverActions = ({ driver, onEdit, onDelete, onView, onRestore }: DriverActionsProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -31,17 +32,30 @@ export const DriverActions = ({ driver, onEdit, onDelete, onView }: DriverAction
           View Details
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onEdit(driver)}>
-        <Edit className="mr-2 h-4 w-4" />
-        Edit
-      </DropdownMenuItem>
-      <DropdownMenuItem
-        className="text-red-600"
-        onClick={() => onDelete(driver.driverId)}
-      >
-        <Trash2 className="mr-2 h-4 w-4" />
-        Delete
-      </DropdownMenuItem>
+      {!driver.isDeleted && (
+        <DropdownMenuItem onClick={() => onEdit(driver)}>
+          <Edit className="mr-2 h-4 w-4" />
+          Edit
+        </DropdownMenuItem>
+      )}
+      {!driver.isDeleted && (
+        <DropdownMenuItem
+          className="text-red-600"
+          onClick={() => onDelete(driver.driverId)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
+        </DropdownMenuItem>
+      )}
+      {driver.isDeleted && onRestore && (
+        <DropdownMenuItem
+          className="text-green-700"
+          onClick={() => onRestore(driver.driverId)}
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Recover
+        </DropdownMenuItem>
+      )}
     </DropdownMenuContent>
   </DropdownMenu>
 );
@@ -50,7 +64,8 @@ export const DriverActions = ({ driver, onEdit, onDelete, onView }: DriverAction
 export const driverColumns = (
   onEdit: (driver: TruckDriver) => void,
   onDelete: (id: string) => void,
-  onView?: (driver: TruckDriver) => void
+  onView?: (driver: TruckDriver) => void,
+  onRestore?: (id: string) => void
 ): TableColumn<TruckDriver>[] => [
   {
     accessorKey: "name",
@@ -109,6 +124,18 @@ export const driverColumns = (
     },
   },
   {
+    accessorKey: "isDeleted",
+    header: "Deleted",
+    meta: { sortable: true, filterable: true },
+    cell: ({ row }) => (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        row.original.isDeleted ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+      }`}>
+        {row.original.isDeleted ? 'Yes' : 'No'}
+      </span>
+    ),
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
@@ -117,6 +144,7 @@ export const driverColumns = (
         onEdit={onEdit}
         onDelete={onDelete}
         onView={onView}
+        onRestore={onRestore}
       />
     ),
   },

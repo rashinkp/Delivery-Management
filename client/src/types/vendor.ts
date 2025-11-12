@@ -1,6 +1,8 @@
 export interface Vendor {
   vendorId: string;
   name: string;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
   location: string;
   contactNumber: string;
   email: string;

@@ -19,15 +19,21 @@ export class VendorRepository
   }
 
   async findByEmail(email: string): Promise<Vendor | null> {
-    return this.vendorModel.findOne({ email }).exec();
+    return this.vendorModel
+      .findOne({ email, isDeleted: { $ne: true } })
+      .exec();
   }
 
   async findByContactNumber(contactNumber: string): Promise<Vendor | null> {
-    return this.vendorModel.findOne({ contactNumber }).exec();
+    return this.vendorModel
+      .findOne({ contactNumber, isDeleted: { $ne: true } })
+      .exec();
   }
 
   async findByLocation(location: string): Promise<Vendor[]> {
-    return this.vendorModel.find({ location }).exec();
+    return this.vendorModel
+      .find({ location, isDeleted: { $ne: true } })
+      .exec();
   }
 
   async findWithPagination(query: VendorQueryDto): Promise<{
@@ -46,9 +52,15 @@ export class VendorRepository
       location,
       sortBy = 'createdAt',
       sortOrder = 'desc',
-    } = query;
+      deleted = 'active',
+    } = query as any;
 
     const filter: any = {};
+    if (deleted === 'active') {
+      filter.isDeleted = { $ne: true };
+    } else if (deleted === 'deleted') {
+      filter.isDeleted = true;
+    }
     if (location) {
       filter.location = location;
     }
@@ -70,7 +82,12 @@ export class VendorRepository
     }
 
     const [data, total] = await Promise.all([
-      this.vendorModel.find(filter).sort(sort).skip(skip).limit(limit).exec(),
+      this.vendorModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
       this.vendorModel.countDocuments(filter).exec(),
     ]);
 

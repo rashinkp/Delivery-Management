@@ -46,6 +46,13 @@ export interface IProductService {
   remove(id: string): Promise<void>;
 
   /**
+   * Restores a soft-deleted product by its ID.
+   * @param id - The ID of the product to restore.
+   * @throws NotFoundException if the product is not found or restoration fails.
+   */
+  restore(id: string): Promise<void>;
+
+  /**
    * Finds products by category.
    * @param category - The category name to filter products.
    * @returns A list of matching product response DTOs.

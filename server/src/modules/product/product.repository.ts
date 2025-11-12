@@ -19,7 +19,9 @@ export class ProductRepository
   }
 
   async findByCategory(category: string): Promise<Product[]> {
-    return this.productModel.find({ category }).exec();
+    return this.productModel
+      .find({ category, isDeleted: { $ne: true } })
+      .exec();
   }
 
   async findByPriceRange(
@@ -29,6 +31,7 @@ export class ProductRepository
     return this.productModel
       .find({
         price: { $gte: minPrice, $lte: maxPrice },
+        isDeleted: { $ne: true },
       })
       .exec();
   }
@@ -37,6 +40,7 @@ export class ProductRepository
     return this.productModel
       .find({
         stock: { $lte: threshold },
+        isDeleted: { $ne: true },
       })
       .exec();
   }
@@ -59,9 +63,15 @@ export class ProductRepository
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
-    } = query;
+      deleted = 'active',
+    } = query as any;
 
     const filter: any = {};
+    if (deleted === 'active') {
+      filter.isDeleted = { $ne: true };
+    } else if (deleted === 'deleted') {
+      filter.isDeleted = true;
+    }
     if (category) filter.category = category;
     if (typeof minPrice === 'number' || typeof maxPrice === 'number') {
       filter.price = {};
@@ -84,7 +94,12 @@ export class ProductRepository
     }
 
     const [data, total] = await Promise.all([
-      this.productModel.find(filter).sort(sort).skip(skip).limit(limit).exec(),
+      this.productModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
       this.productModel.countDocuments(filter).exec(),
     ]);
 

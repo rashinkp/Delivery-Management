@@ -21,6 +21,7 @@ export const useTruckDrivers = (params?: {
   status?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  deleted?: 'all' | 'active' | 'deleted';
 }) => {
   return useQuery({
     queryKey: ['truck-drivers', params],
@@ -32,6 +33,7 @@ export const useTruckDrivers = (params?: {
       if (params?.status) searchParams.append('status', params.status);
       if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
       if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      if (params?.deleted) searchParams.append('deleted', params.deleted);
 
       const response = await axiosInstance.get(`/truck-drivers?${searchParams}`);
       return response.data.data;
@@ -111,6 +113,23 @@ export const useDeleteTruckDriver = () => {
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       await axiosInstance.delete(`/truck-drivers/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['truck-drivers'] });
+    },
+  });
+};
+
+// Restore truck driver
+export const useRestoreTruckDriver = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      const response = await axiosInstance.patch(`/truck-drivers/${id}/restore`);
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || response.data.message || 'Failed to restore truck driver');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['truck-drivers'] });

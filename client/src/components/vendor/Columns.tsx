@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye, RotateCcw } from "lucide-react";
 import type { Vendor } from "@/types/vendor";
 
 type VendorActionsProps = {
@@ -15,9 +15,10 @@ type VendorActionsProps = {
   onEdit: (vendor: Vendor) => void;
   onDelete: (id: string) => void;
   onView?: (vendor: Vendor) => void;
+  onRestore?: (id: string) => void;
 };
 
-export const VendorActions = ({ vendor, onEdit, onDelete, onView }: VendorActionsProps) => (
+export const VendorActions = ({ vendor, onEdit, onDelete, onView, onRestore }: VendorActionsProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -31,17 +32,30 @@ export const VendorActions = ({ vendor, onEdit, onDelete, onView }: VendorAction
           View Details
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onEdit(vendor)}>
-        <Edit className="mr-2 h-4 w-4" />
-        Edit
-      </DropdownMenuItem>
-      <DropdownMenuItem
-        className="text-red-600"
-        onClick={() => onDelete(vendor.vendorId)}
-      >
-        <Trash2 className="mr-2 h-4 w-4" />
-        Delete
-      </DropdownMenuItem>
+      {!vendor.isDeleted && (
+        <DropdownMenuItem onClick={() => onEdit(vendor)}>
+          <Edit className="mr-2 h-4 w-4" />
+          Edit
+        </DropdownMenuItem>
+      )}
+      {!vendor.isDeleted && (
+        <DropdownMenuItem
+          className="text-red-600"
+          onClick={() => onDelete(vendor.vendorId)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
+        </DropdownMenuItem>
+      )}
+      {vendor.isDeleted && onRestore && (
+        <DropdownMenuItem
+          className="text-green-700"
+          onClick={() => onRestore(vendor.vendorId)}
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Recover
+        </DropdownMenuItem>
+      )}
     </DropdownMenuContent>
   </DropdownMenu>
 );
@@ -50,7 +64,8 @@ export const VendorActions = ({ vendor, onEdit, onDelete, onView }: VendorAction
 export const vendorColumns = (
   onEdit: (vendor: Vendor) => void,
   onDelete: (id: string) => void,
-  onView?: (vendor: Vendor) => void
+  onView?: (vendor: Vendor) => void,
+  onRestore?: (id: string) => void
 ): TableColumn<Vendor>[] => [
   {
     accessorKey: "name",
@@ -102,6 +117,18 @@ export const vendorColumns = (
     ),
   },
   {
+    accessorKey: "isDeleted",
+    header: "Deleted",
+    meta: { sortable: true, filterable: true },
+    cell: ({ row }) => (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        row.original.isDeleted ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+      }`}>
+        {row.original.isDeleted ? 'Yes' : 'No'}
+      </span>
+    ),
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
@@ -110,6 +137,7 @@ export const vendorColumns = (
         onEdit={onEdit}
         onDelete={onDelete}
         onView={onView}
+        onRestore={onRestore}
       />
     ),
   },
