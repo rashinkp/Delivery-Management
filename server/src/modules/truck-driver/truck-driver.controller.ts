@@ -11,7 +11,6 @@ import {
   Inject,
   UsePipes,
   ValidationPipe,
-  UseGuards,
   Res,
   Req,
   UnauthorizedException,
@@ -23,13 +22,10 @@ import { TruckDriverQueryDto } from './dto/truck-driver-query.dto';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { ITruckDriverService } from './interfaces/truck-driver.service.interface';
 import { LoginTruckDriverDto } from './dto/login-truck-driver.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import type { Response } from 'express';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('truck-drivers')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class TruckDriverController {
@@ -204,6 +200,11 @@ export class TruckDriverController {
         'Truck driver logged in successfully',
       );
     } catch (error) {
+      // Preserve the original error message from the service
+      if (error instanceof UnauthorizedException) {
+        throw error; // Re-throw with original message
+      }
+      // For any other unexpected errors, use generic message
       throw new UnauthorizedException('Invalid credentials');
     }
   }

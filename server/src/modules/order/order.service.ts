@@ -14,12 +14,15 @@ import { OrderMapper } from './mappers/order.mapper';
 import { IOrderService } from './interfaces/order.service.interface';
 import { Types } from 'mongoose';
 import { OrderQueryDto } from './dto/order-query.dto';
+import type { IProductService } from '../product/interfaces/product.service.interface';
 
 @Injectable()
 export class OrderService implements IOrderService {
   constructor(
     @Inject('IOrderRepository')
     private readonly orderRepository: IOrderRepository,
+    @Inject('IProductService')
+    private readonly productService: IProductService,
   ) {}
 
   private toEntity(dto: CreateOrderDto | UpdateOrderDto): any {
@@ -47,6 +50,44 @@ export class OrderService implements IOrderService {
   }
 
   async create(createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
+    // Validate stock availability for all products
+    const stockValidationErrors: string[] = [];
+    
+    for (const productItem of createOrderDto.products) {
+      try {
+        const product = await this.productService.findById(productItem.productId);
+        
+        if (product.stock < productItem.quantity) {
+          stockValidationErrors.push(
+            `Insufficient stock for ${product.name}. Available: ${product.stock}, Requested: ${productItem.quantity}`
+          );
+        }
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          stockValidationErrors.push(
+            `Product with ID ${productItem.productId} not found`
+          );
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    if (stockValidationErrors.length > 0) {
+      throw new BadRequestException(
+        `Stock validation failed: ${stockValidationErrors.join('; ')}`
+      );
+    }
+
+    // Reduce stock for all products
+    for (const productItem of createOrderDto.products) {
+      await this.productService.reduceStock(
+        productItem.productId,
+        productItem.quantity
+      );
+    }
+
+    // Create the order
     const entity = this.toEntity(createOrderDto);
     const order = await this.orderRepository.create(entity);
     return OrderMapper.toResponseDto(order);

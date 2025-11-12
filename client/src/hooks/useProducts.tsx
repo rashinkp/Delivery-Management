@@ -138,3 +138,22 @@ export const useRestoreProduct = () => {
   });
 };
 
+// Increase stock (for purchasing/restocking)
+export const useIncreaseStock = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, quantity }: { id: string; quantity: number }): Promise<Product> => {
+      const response = await axiosInstance.patch(`/products/${id}/increase-stock`, { quantity });
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || response.data.message || 'Failed to increase stock');
+      }
+      return response.data.data;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product', id] });
+    },
+  });
+};
+

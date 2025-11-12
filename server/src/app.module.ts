@@ -10,10 +10,11 @@ import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { JwtStrategy } from './common/strategies/jwt.strategy';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AuthModule } from './modules/auth/auth.module';
+import type { ITruckDriverService } from './modules/truck-driver/interfaces/truck-driver.service.interface';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     LoggerModule,
     DatabaseModule,
-    TruckDriverModule,
+    TruckDriverModule, // Must be imported before RolesGuard can access ITruckDriverService
     VendorModule,
     ProductModule,
     OrderModule,
@@ -34,7 +35,14 @@ import { AuthModule } from './modules/auth/auth.module';
     AppService,
     JwtStrategy,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },
+    {
+      provide: APP_GUARD,
+      useFactory: (
+        reflector: Reflector,
+        driverService: ITruckDriverService,
+      ) => new RolesGuard(reflector, driverService),
+      inject: [Reflector, 'ITruckDriverService'],
+    },
   ],
 })
 export class AppModule {}

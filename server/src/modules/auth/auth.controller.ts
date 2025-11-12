@@ -35,6 +35,12 @@ export class AuthController {
 
     if (role === 'driver') {
       const driver = await this.driverService.findById(userId);
+      // Check if driver is blocked
+      if (driver.status === 'inactive') {
+        throw new UnauthorizedException(
+          'Your account has been blocked. Please contact the administrator for assistance.'
+        );
+      }
       return ApiResponseDto.success({ ...driver, role });
     }
 

@@ -49,9 +49,18 @@ export default function Order() {
     setErrorHandler(null);
     setSuccessMessage(null);
 
+    // Check stock availability
     const existingItem = cart.find(
       (item) => item.productId === product.productId
     );
+    const currentCartQuantity = existingItem ? existingItem.quantity : 0;
+    
+    if (currentCartQuantity >= product.stock) {
+      setErrorHandler(
+        `Insufficient stock for ${product.name}. Available: ${product.stock}`
+      );
+      return;
+    }
 
     if (existingItem) {
       setCart(
@@ -70,6 +79,7 @@ export default function Order() {
           price: product.price,
           quantity: 1,
           image: product.image,
+          stock: product.stock, // Store stock for validation
         },
       ]);
     }
@@ -82,13 +92,26 @@ export default function Order() {
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) {
       removeFromCart(productId);
-    } else {
-      setCart(
-        cart.map((item) =>
-          item.productId === productId ? { ...item, quantity } : item
-        )
-      );
+      return;
     }
+
+    const item = cart.find((item) => item.productId === productId);
+    if (!item) return;
+
+    // Validate stock availability
+    if (item.stock && quantity > item.stock) {
+      setErrorHandler(
+        `Insufficient stock for ${item.name}. Available: ${item.stock}`
+      );
+      return;
+    }
+
+    setCart(
+      cart.map((item) =>
+        item.productId === productId ? { ...item, quantity } : item
+      )
+    );
+    setErrorHandler(null);
   };
 
   const calculateTotal = () => {
@@ -131,9 +154,16 @@ export default function Order() {
       setSelectedVendor(null);
     } catch (error: any) {
       console.error("Create order error:", error);
-      setErrorHandler(
-        error?.message || "Failed to create order. Please try again."
-      );
+      // Extract error message from API response
+      let errorMessage = "Failed to create order. Please try again.";
+      if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      setErrorHandler(errorMessage);
     }
   };
 
@@ -248,8 +278,14 @@ export default function Order() {
                       <p className="text-sm font-bold text-green-600">
                         ${product.price.toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        Stock: {product.stock}
+                      <p className={`text-xs ${
+                        product.stock === 0 
+                          ? "text-red-500 font-semibold" 
+                          : product.stock < 10 
+                          ? "text-orange-500" 
+                          : "text-gray-500"
+                      }`}>
+                        Stock: {product.stock} {product.stock === 0 && "(Out of Stock)"}
                       </p>
                       <Button
                         onClick={() => addToCart(product)}
@@ -258,7 +294,7 @@ export default function Order() {
                         disabled={product.stock === 0}
                       >
                         <Plus className="h-4 w-4 mr-1" />
-                        Add to Cart
+                        {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
                       </Button>
                     </div>
                   ))}
@@ -347,6 +383,7 @@ export default function Order() {
                             updateQuantity(item.productId, item.quantity + 1)
                           }
                           className="h-8 w-8 p-0"
+                          disabled={item.stock !== undefined && item.quantity >= item.stock}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -355,6 +392,11 @@ export default function Order() {
                         ${(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
+                    {item.stock !== undefined && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Stock: {item.stock} available
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

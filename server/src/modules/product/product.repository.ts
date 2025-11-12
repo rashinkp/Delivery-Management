@@ -109,4 +109,28 @@ export class ProductRepository
 
     return { data, total, page, limit, totalPages, hasNext, hasPrev };
   }
+
+  async reduceStock(id: string, quantity: number): Promise<Product> {
+    const product = await this.productModel.findById(id).exec();
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    
+    if (product.stock < quantity) {
+      throw new Error(`Insufficient stock. Available: ${product.stock}, Requested: ${quantity}`);
+    }
+
+    product.stock -= quantity;
+    return product.save();
+  }
+
+  async increaseStock(id: string, quantity: number): Promise<Product> {
+    const product = await this.productModel.findById(id).exec();
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    product.stock += quantity;
+    return product.save();
+  }
 }

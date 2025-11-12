@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useContext } from "react";
+import { AuthContext, type AuthContextType } from "@/contexts/AuthContext";
 
 interface Props {
   role?: "admin" | "driver";
@@ -7,7 +8,15 @@ interface Props {
 }
 
 export const PublicRoute = ({ role, children }: Props) => {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  // Safely get auth context - handle case where provider might not be available
+  const authContext = useContext(AuthContext);
+  
+  // If AuthProvider is not available, just render children (public route)
+  if (!authContext) {
+    return <>{children}</>;
+  }
+
+  const { user, isLoading, isAuthenticated } = authContext as AuthContextType;
 
   // Show loading spinner while checking authentication
   if (isLoading) {
