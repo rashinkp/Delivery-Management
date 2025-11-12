@@ -87,4 +87,21 @@ export interface IProductService {
     hasNext: boolean;
     hasPrev: boolean;
   }>;
+
+  /**
+   * Reduces stock for a product (used when orders are created).
+   * @param id - The ID of the product.
+   * @param quantity - The quantity to reduce from stock.
+   * @throws NotFoundException if the product is not found.
+   * @throws BadRequestException if insufficient stock.
+   */
+  reduceStock(id: string, quantity: number): Promise<ProductResponseDto>;
+
+  /**
+   * Increases stock for a product (used when purchasing/restocking).
+   * @param id - The ID of the product.
+   * @param quantity - The quantity to add to stock.
+   * @throws NotFoundException if the product is not found.
+   */
+  increaseStock(id: string, quantity: number): Promise<ProductResponseDto>;
 }

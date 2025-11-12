@@ -12,17 +12,14 @@ import {
   UsePipes,
   ValidationPipe,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { IncreaseStockDto } from './dto/increase-stock.dto';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { IProductService } from './interfaces/product.service.interface';
 import { Roles } from 'src/common/decorators/role.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('products')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class ProductController {
@@ -158,6 +155,20 @@ export class ProductController {
       return ApiResponseDto.success(null, 'Product deleted successfully');
     } catch (error) {
       return ApiResponseDto.error('Failed to delete product', error.message);
+    }
+  }
+
+  @Patch(':id/increase-stock')
+  @Roles('admin')
+  async increaseStock(
+    @Param('id') id: string,
+    @Body() increaseStockDto: IncreaseStockDto,
+  ): Promise<ApiResponseDto<any>> {
+    try {
+      const product = await this.productService.increaseStock(id, increaseStockDto.quantity);
+      return ApiResponseDto.success(product, 'Stock increased successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to increase stock', error.message);
     }
   }
 }

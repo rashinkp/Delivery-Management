@@ -12,19 +12,15 @@ import {
   UsePipes,
   ValidationPipe,
   Query,
-  UseGuards,
   Req,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { ApiResponseDto } from '../../common/dto/api-response.dto';
 import type { IOrderService } from './interfaces/order.service.interface';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
 import type { Request } from 'express';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('orders')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class OrderController {

@@ -1,5 +1,5 @@
 // src/pages/DriverLogin.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReusableForm from "@/components/Form";
 import FormInput from "@/components/Input";
 import Alert from "@/components/ui/alert";
@@ -11,8 +11,17 @@ import { useDriverLogin } from "@/hooks/useDriverLogin";
 const DriverLogin = () => {
   const initialValues = { mobile: "", password: "" };
   const [showPassword, setShowPassword] = useState(false);
+  const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
   const { mutateAsync: login, isPending, error } = useDriverLogin();
+
+  useEffect(() => {
+    const storedMessage = localStorage.getItem('auth-blocked-message');
+    if (storedMessage) {
+      setBlockedMessage(storedMessage);
+      localStorage.removeItem('auth-blocked-message');
+    }
+  }, []);
 
   const handleSubmit = async (
     values: typeof initialValues,
@@ -21,8 +30,12 @@ const DriverLogin = () => {
     try {
       await login(values);
       helpers.resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Driver login failed:", error);
+      // Log the full error structure for debugging
+      if (error?.response?.data) {
+        console.log("Error response data:", error.response.data);
+      }
       // Error is handled by the mutation and displayed below
     }
   };
@@ -31,9 +44,41 @@ const DriverLogin = () => {
   const getErrorMessage = () => {
     if (!error) return null;
     
-    // Handle different types of errors
+    // NestJS default exception format: { statusCode: 401, message: "..." }
+    // Check response data structure
+    const responseData = error.response?.data;
+    let errorMessage = '';
+    
+    if (responseData) {
+      // NestJS default format: response.data.message
+      if (responseData.message) {
+        errorMessage = Array.isArray(responseData.message) 
+          ? responseData.message[0] 
+          : responseData.message;
+      }
+      // Alternative formats
+      else if (responseData.error) {
+        errorMessage = typeof responseData.error === 'string' 
+          ? responseData.error 
+          : responseData.error?.message || '';
+      }
+    }
+    
+    // Fallback to axios error message
+    if (!errorMessage && error.message) {
+      errorMessage = error.message;
+    }
+    
+    // Check for blocked account message first (case-insensitive)
+    if (errorMessage && (errorMessage.toLowerCase().includes('blocked') || 
+                         errorMessage.toLowerCase().includes('contact the administrator'))) {
+      return errorMessage;
+    }
+    
+    // Handle different HTTP status codes
     if (error.response?.status === 401) {
-      return "Invalid mobile number or password. Please check your credentials and try again.";
+      // If we have a specific error message, use it; otherwise use generic
+      return errorMessage || "Invalid mobile number or password. Please check your credentials and try again.";
     }
     
     if (error.response?.status === 404) {
@@ -44,16 +89,11 @@ const DriverLogin = () => {
       return "Server error. Please try again later.";
     }
     
-    if (error.response?.data?.message) {
-      return error.response.data.message;
-    }
-    
-    if (error.message) {
-      return error.message;
-    }
-    
-    return "Login failed. Please try again.";
+    // Return the extracted error message or a generic fallback
+    return errorMessage || "Login failed. Please try again.";
   };
+
+  const errorMessage = getErrorMessage();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
@@ -66,9 +106,14 @@ const DriverLogin = () => {
           </p>
         </div>
 
+        {/* Blocked account message */}
+        {blockedMessage && (
+          <Alert type="error" message={blockedMessage} />
+        )}
+
         {/* Error Message */}
-        {getErrorMessage() && (
-          <Alert type="error" message={getErrorMessage()} />
+        {errorMessage && (
+          <Alert type="error" message={errorMessage} />
         )}
 
         {/* Form */}

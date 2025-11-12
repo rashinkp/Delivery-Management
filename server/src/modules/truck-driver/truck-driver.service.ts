@@ -181,11 +181,16 @@ export class TruckDriverService implements ITruckDriverService {
     const driver = await this.truckDriverRepository.findByMobile(
       loginDto.mobile,
     );
-    if (!driver) throw new UnauthorizedException('Invalid mobile or password');
-    console.log(driver);
+    if (!driver) throw new UnauthorizedException('Invalid credentials or user is not available');
 
     const isMatch = await bcrypt.compare(loginDto.password, driver.password);
-    if (!isMatch) throw new UnauthorizedException('Invalid mobile or password');
+    if (!isMatch) throw new UnauthorizedException('Invalid credentials or user is not available');
+    // Check if driver is blocked/inactive
+    if (driver.status === 'inactive') {
+      throw new UnauthorizedException(
+        'Your account has been blocked. Please contact the administrator for assistance.'
+      );
+    }
 
     const payload = { sub: driver._id, mobile: driver.mobile, role: 'driver' };
     const token = await this.jwtService.signAsync(payload);

@@ -17,4 +17,6 @@ export interface IProductRepository extends IBaseRepository<Product> {
     hasNext: boolean;
     hasPrev: boolean;
   }>;
+  reduceStock(id: string, quantity: number): Promise<Product>;
+  increaseStock(id: string, quantity: number): Promise<Product>;
 }

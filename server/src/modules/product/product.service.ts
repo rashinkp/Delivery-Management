@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
 import type { IProductRepository } from './interfaces/product.repository.interface';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -104,5 +104,40 @@ export class ProductService implements IProductService {
       ...result,
       data: ProductMapper.toResponseDtoList(result.data as any),
     };
+  }
+
+  async reduceStock(id: string, quantity: number): Promise<ProductResponseDto> {
+    if (quantity <= 0) {
+      throw new BadRequestException('Quantity must be greater than 0');
+    }
+
+    try {
+      const product = await this.productRepository.reduceStock(id, quantity);
+      return ProductMapper.toResponseDto(product);
+    } catch (error) {
+      if (error.message === 'Product not found') {
+        throw new NotFoundException('Product not found');
+      }
+      if (error.message.includes('Insufficient stock')) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  async increaseStock(id: string, quantity: number): Promise<ProductResponseDto> {
+    if (quantity <= 0) {
+      throw new BadRequestException('Quantity must be greater than 0');
+    }
+
+    try {
+      const product = await this.productRepository.increaseStock(id, quantity);
+      return ProductMapper.toResponseDto(product);
+    } catch (error) {
+      if (error.message === 'Product not found') {
+        throw new NotFoundException('Product not found');
+      }
+      throw error;
+    }
   }
 }

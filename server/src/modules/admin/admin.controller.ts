@@ -8,7 +8,6 @@ import {
   ValidationPipe,
   Inject,
   Res,
-  UseGuards,
   Get,
   Req,
   UnauthorizedException,
@@ -19,12 +18,9 @@ import { ApiResponseDto } from 'src/common/dto/api-response.dto';
 import type { IAdminService } from './interfaces/admin.service.interface';
 import { Public } from 'src/common/decorators/public.decorator';
 import type { Response } from 'express';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { LoggerService } from 'src/common/logger/logger.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class AdminController {
