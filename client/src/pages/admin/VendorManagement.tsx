@@ -16,6 +16,16 @@ import { DataTable } from "@/components/Table";
 import { VendorForm } from "@/components/vendor/VendorForm";
 import { vendorColumns } from "@/components/vendor/Columns";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
+import {
   useVendors,
   useCreateVendor,
   useUpdateVendor,
@@ -40,6 +50,13 @@ export default function VendorManagement() {
   
   // Error state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // AlertDialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [targetId, setTargetId] = useState<string | null>(null);
+  const [targetName, setTargetName] = useState<string | null>(null);
 
   // Fetch vendors (server-side pagination & filtering)
   const { data: vendorsResp, isLoading, error } = useVendors({
@@ -80,8 +97,10 @@ export default function VendorManagement() {
   const handleCreate = async (data: CreateVendorDto | UpdateVendorDto) => {
     try {
       setErrorMessage(null);
+      setSuccessMessage(null);
       await createMutation.mutateAsync(data as CreateVendorDto);
       setOpenForm(false);
+      setSuccessMessage("Vendor created successfully.");
     } catch (error) {
       console.error("Create vendor error:", error);
       const message = extractErrorMessage(error);
@@ -103,9 +122,11 @@ export default function VendorManagement() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { vendorId, createdAt, updatedAt, ...updateData } = data as any;
       
+      setSuccessMessage(null);
       await updateMutation.mutateAsync({ id: editingVendor.vendorId, data: updateData });
       setOpenForm(false);
       setEditingVendor(undefined);
+      setSuccessMessage("Vendor updated successfully.");
     } catch (error) {
       console.error("Update vendor error:", error);
       const message = extractErrorMessage(error);
@@ -113,25 +134,51 @@ export default function VendorManagement() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this vendor? This action cannot be undone.")) {
-      return;
-    }
+  const confirmDelete = (id: string, name?: string) => {
+    setTargetId(id);
+    setTargetName(name || null);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRestore = (id: string, name?: string) => {
+    setTargetId(id);
+    setTargetName(name || null);
+    setRestoreDialogOpen(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!targetId) return;
     try {
-      await deleteMutation.mutateAsync(id);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+      await deleteMutation.mutateAsync(targetId);
+      setSuccessMessage("Vendor deleted successfully.");
     } catch (error) {
       console.error("Delete vendor error:", error);
+      const message = extractErrorMessage(error);
+      setErrorMessage(message);
+    } finally {
+      setDeleteDialogOpen(false);
+      setTargetId(null);
+      setTargetName(null);
     }
   };
 
-  const handleRestore = async (id: string) => {
+  const handleRestoreConfirmed = async () => {
+    if (!targetId) return;
     try {
       setErrorMessage(null);
-      await restoreMutation.mutateAsync(id);
+      setSuccessMessage(null);
+      await restoreMutation.mutateAsync(targetId);
+      setSuccessMessage("Vendor restored successfully.");
     } catch (error) {
       console.error("Restore vendor error:", error);
       const message = extractErrorMessage(error);
       setErrorMessage(message);
+    } finally {
+      setRestoreDialogOpen(false);
+      setTargetId(null);
+      setTargetName(null);
     }
   };
 
@@ -209,10 +256,11 @@ export default function VendorManagement() {
         </Button>
       </div>
 
-      {/* Error Alert */}
+      {/* Alerts */}
       {getErrorMessage() && (
         <Alert type="error" message={getErrorMessage()!} />
       )}
+      {successMessage && <Alert type="success" message={successMessage} />}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
@@ -257,7 +305,18 @@ export default function VendorManagement() {
       {/* Data Table */}
       <DataTable
         data={vendors}
-        columns={vendorColumns(openEdit, handleDelete, handleView, handleRestore)}
+        columns={vendorColumns(
+          openEdit,
+          (id: string) => {
+            const v = vendors.find(x => x.vendorId === id);
+            confirmDelete(id, v?.name);
+          },
+          handleView,
+          (id: string) => {
+            const v = vendors.find(x => x.vendorId === id);
+            confirmRestore(id, v?.name);
+          }
+        )}
         pagination={{ pageIndex, pageSize }}
         totalCount={total}
         isLoading={isLoading}
@@ -296,6 +355,45 @@ export default function VendorManagement() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Delete AlertDialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete vendor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{targetName || "this vendor"}</span>? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirmed}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Restore AlertDialog */}
+      <AlertDialog open={restoreDialogOpen} onOpenChange={setRestoreDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restore vendor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to restore{" "}
+              <span className="font-semibold">{targetName || "this vendor"}</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestoreConfirmed}>
+              Restore
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
