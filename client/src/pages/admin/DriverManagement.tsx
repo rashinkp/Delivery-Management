@@ -20,6 +20,7 @@ import {
   useCreateTruckDriver,
   useUpdateTruckDriver,
   useDeleteTruckDriver,
+  useRestoreTruckDriver,
 } from "@/hooks/useTruckDrivers";
 import type { CreateTruckDriverDto, TruckDriver, UpdateTruckDriverDto } from "@/types/truckDriver";
 
@@ -28,6 +29,7 @@ export default function DriverManagement() {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [deletedFilter, setDeletedFilter] = useState<'all' | 'active' | 'deleted'>('all');
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([]);
 
   // Dialog state
@@ -45,11 +47,13 @@ export default function DriverManagement() {
     status: statusFilter || undefined,
     sortBy: sorting.length > 0 ? sorting[0].id : 'createdAt',
     sortOrder: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : 'desc',
+    deleted: deletedFilter,
   });
 
   const createMutation = useCreateTruckDriver();
   const updateMutation = useUpdateTruckDriver();
   const deleteMutation = useDeleteTruckDriver();
+  const restoreMutation = useRestoreTruckDriver();
 
   // Helper function to extract error message
   const extractErrorMessage = (error: any): string => {
@@ -125,6 +129,17 @@ export default function DriverManagement() {
       await deleteMutation.mutateAsync(id);
     } catch (error) {
       console.error("Delete driver error:", error);
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      setErrorMessage(null);
+      await restoreMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("Restore driver error:", error);
+      const message = extractErrorMessage(error);
+      setErrorMessage(message);
     }
   };
 
@@ -229,12 +244,25 @@ export default function DriverManagement() {
             <option value="inactive">Inactive</option>
           </select>
         </div>
+
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-gray-500" />
+          <select
+            value={deletedFilter}
+            onChange={(e) => { setDeletedFilter(e.target.value as any); setPagination({ ...pagination, pageIndex: 0 }); }}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+          >
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="deleted">Deleted</option>
+          </select>
+        </div>
       </div>
 
       {/* Data Table */}
       <DataTable
         data={driversResponse?.data || []}
-        columns={driverColumns(openEdit, handleDelete, handleView)}
+        columns={driverColumns(openEdit, handleDelete, handleView, handleRestore)}
         pagination={pagination}
         totalCount={driversResponse?.total || 0}
         isLoading={isLoading}

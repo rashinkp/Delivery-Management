@@ -1,6 +1,8 @@
 export interface Product {
   productId: string;
   name: string;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
   price: number;
   category: string;
   image: string;

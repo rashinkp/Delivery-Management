@@ -11,6 +11,7 @@ export interface IVendorService {
     updateVendorDto: UpdateVendorDto,
   ): Promise<VendorResponseDto>;
   remove(id: string): Promise<void>;
+  restore(id: string): Promise<void>;
   findByEmail(email: string): Promise<VendorResponseDto>;
   findByContactNumber(contactNumber: string): Promise<VendorResponseDto>;
   findByLocation(location: string): Promise<VendorResponseDto[]>;

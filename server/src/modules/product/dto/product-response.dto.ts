@@ -5,6 +5,8 @@ export class ProductResponseDto {
   category: string;
   image: string;
   stock: number;
+  isDeleted: boolean;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -15,6 +17,8 @@ export class ProductResponseDto {
     this.category = product.category;
     this.image = product.image;
     this.stock = product.stock;
+    this.isDeleted = !!product.isDeleted;
+    this.deletedAt = product.deletedAt ?? null;
     this.createdAt = product.createdAt;
     this.updatedAt = product.updatedAt;
   }

@@ -20,6 +20,7 @@ export const useVendors = (params?: {
   location?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  deleted?: 'all' | 'active' | 'deleted';
 }) => {
   return useQuery({
     queryKey: ['vendors', params],
@@ -31,6 +32,7 @@ export const useVendors = (params?: {
       if (params?.location) searchParams.append('location', params.location);
       if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
       if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+      if (params?.deleted) searchParams.append('deleted', params.deleted);
       const qs = searchParams.toString();
       const response = await axiosInstance.get(`/vendors${qs ? `?${qs}` : ''}`);
       return response.data.data;
@@ -108,6 +110,23 @@ export const useDeleteVendor = () => {
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       await axiosInstance.delete(`/vendors/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+    },
+  });
+};
+
+// Restore vendor
+export const useRestoreVendor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      const response = await axiosInstance.patch(`/vendors/${id}/restore`);
+      if (response.data && !response.data.success) {
+        throw new Error(response.data.error || response.data.message || 'Failed to restore vendor');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendors'] });

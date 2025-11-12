@@ -111,10 +111,25 @@ export class VendorService implements IVendorService {
   }
 
   async remove(id: string): Promise<void> {
-    const vendor = await this.findById(id);
+    const vendor = await this.vendorRepository.findByIdIncludingDeleted(id);
+    if (!vendor) {
+      throw new NotFoundException('Vendor not found');
+    }
+
     const deleted = await this.vendorRepository.delete(id);
     if (!deleted) {
       throw new NotFoundException('Failed to delete vendor');
+    }
+  }
+
+  async restore(id: string): Promise<void> {
+    const vendor = await this.vendorRepository.findByIdIncludingDeleted(id);
+    if (!vendor) {
+      throw new NotFoundException('Vendor not found');
+    }
+    const restored = await this.vendorRepository.restore(id);
+    if (!restored) {
+      throw new NotFoundException('Failed to restore vendor');
     }
   }
 

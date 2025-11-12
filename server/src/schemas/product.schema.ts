@@ -6,6 +6,12 @@ export class Product extends Document {
   @Prop({ required: true })
   name: string;
 
+  @Prop({ type: Boolean, default: false })
+  isDeleted: boolean;
+
+  @Prop({ type: Date, default: null })
+  deletedAt: Date | null;
+
   @Prop({ required: true })
   price: number;
 

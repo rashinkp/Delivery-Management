@@ -20,6 +20,7 @@ import {
   useCreateVendor,
   useUpdateVendor,
   useDeleteVendor,
+  useRestoreVendor,
 } from "@/hooks/useVendors";
 import type { CreateVendorDto, Vendor, UpdateVendorDto } from "@/types/vendor";
 
@@ -31,6 +32,7 @@ export default function VendorManagement() {
   // Filter & table states
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState<string>("");
+  const [deletedFilter, setDeletedFilter] = useState<'all' | 'active' | 'deleted'>('all');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState<string>('createdAt');
@@ -47,6 +49,7 @@ export default function VendorManagement() {
     location: locationFilter || undefined,
     sortBy,
     sortOrder,
+    deleted: deletedFilter,
   });
   const vendors = vendorsResp?.data ?? [];
   const total = vendorsResp?.total ?? 0;
@@ -54,6 +57,7 @@ export default function VendorManagement() {
   const createMutation = useCreateVendor();
   const updateMutation = useUpdateVendor();
   const deleteMutation = useDeleteVendor();
+  const restoreMutation = useRestoreVendor();
 
   // Helper function to extract error message
   const extractErrorMessage = (error: any): string => {
@@ -117,6 +121,17 @@ export default function VendorManagement() {
       await deleteMutation.mutateAsync(id);
     } catch (error) {
       console.error("Delete vendor error:", error);
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      setErrorMessage(null);
+      await restoreMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("Restore vendor error:", error);
+      const message = extractErrorMessage(error);
+      setErrorMessage(message);
     }
   };
 
@@ -224,12 +239,25 @@ export default function VendorManagement() {
             ))}
           </select>
         </div>
+
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-gray-500" />
+          <select
+            value={deletedFilter}
+            onChange={(e) => { setDeletedFilter(e.target.value as any); setPageIndex(0); }}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+          >
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="deleted">Deleted</option>
+          </select>
+        </div>
       </div>
 
       {/* Data Table */}
       <DataTable
         data={vendors}
-        columns={vendorColumns(openEdit, handleDelete, handleView)}
+        columns={vendorColumns(openEdit, handleDelete, handleView, handleRestore)}
         pagination={{ pageIndex, pageSize }}
         totalCount={total}
         isLoading={isLoading}

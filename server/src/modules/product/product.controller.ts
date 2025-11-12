@@ -124,6 +124,17 @@ export class ProductController {
     }
   }
 
+  @Patch(':id/restore')
+  @Roles('admin')
+  async restore(@Param('id') id: string): Promise<ApiResponseDto<any>> {
+    try {
+      await this.productService.restore(id);
+      return ApiResponseDto.success(null, 'Product restored successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to restore product', error.message);
+    }
+  }
+
   @Patch(':id')
   @Roles('admin')
   async update(

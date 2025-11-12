@@ -132,6 +132,17 @@ export class TruckDriverController {
     }
   }
 
+  @Patch(':id/restore')
+  @Roles('admin') // Only admin can restore drivers
+  async restore(@Param('id') id: string): Promise<ApiResponseDto<any>> {
+    try {
+      await this.truckDriverService.restore(id);
+      return ApiResponseDto.success(null, 'Truck driver restored successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to restore truck driver', error.message);
+    }
+  }
+
   @Patch(':id')
   @Roles('admin') // Only admin can update driver profiles
   async update(

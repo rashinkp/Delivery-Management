@@ -19,17 +19,23 @@ export class TruckDriverRepository
   }
 
   async findByMobile(mobile: string): Promise<TruckDriver | null> {
-    return this.driverModel.findOne({ mobile }).exec();
+    return this.driverModel
+      .findOne({ mobile, isDeleted: { $ne: true } })
+      .exec();
   }
 
   async findByLicenseNumber(
     licenseNumber: string,
   ): Promise<TruckDriver | null> {
-    return this.driverModel.findOne({ licenseNumber }).exec();
+    return this.driverModel
+      .findOne({ licenseNumber, isDeleted: { $ne: true } })
+      .exec();
   }
 
   async findByStatus(status: string): Promise<TruckDriver[]> {
-    return this.driverModel.find({ status }).exec();
+    return this.driverModel
+      .find({ status, isDeleted: { $ne: true } })
+      .exec();
   }
 
   async findWithPagination(query: TruckDriverQueryDto): Promise<{
@@ -48,10 +54,17 @@ export class TruckDriverRepository
       status,
       sortBy = 'createdAt',
       sortOrder = 'desc',
-    } = query;
+      deleted = 'active',
+    } = query as any;
 
     // Build filter object
     const filter: any = {};
+
+    if (deleted === 'active') {
+      filter.isDeleted = { $ne: true };
+    } else if (deleted === 'deleted') {
+      filter.isDeleted = true;
+    }
 
     if (status) {
       filter.status = status;
@@ -73,7 +86,12 @@ export class TruckDriverRepository
 
     // Execute queries
     const [data, total] = await Promise.all([
-      this.driverModel.find(filter).sort(sort).skip(skip).limit(limit).exec(),
+      this.driverModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .exec(),
       this.driverModel.countDocuments(filter).exec(),
     ]);
 

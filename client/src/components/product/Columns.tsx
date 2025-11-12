@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye, RotateCcw } from "lucide-react";
 import type { Product } from "@/types/product";
 
 type ProductActionsProps = {
@@ -15,9 +15,10 @@ type ProductActionsProps = {
   onEdit: (product: Product) => void;
   onDelete: (id: string) => void;
   onView?: (product: Product) => void;
+  onRestore?: (id: string) => void;
 };
 
-export const ProductActions = ({ product, onEdit, onDelete, onView }: ProductActionsProps) => (
+export const ProductActions = ({ product, onEdit, onDelete, onView, onRestore }: ProductActionsProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -31,17 +32,30 @@ export const ProductActions = ({ product, onEdit, onDelete, onView }: ProductAct
           View Details
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onClick={() => onEdit(product)}>
-        <Edit className="mr-2 h-4 w-4" />
-        Edit
-      </DropdownMenuItem>
-      <DropdownMenuItem
-        className="text-red-600"
-        onClick={() => onDelete(product.productId)}
-      >
-        <Trash2 className="mr-2 h-4 w-4" />
-        Delete
-      </DropdownMenuItem>
+      {!product.isDeleted && (
+        <DropdownMenuItem onClick={() => onEdit(product)}>
+          <Edit className="mr-2 h-4 w-4" />
+          Edit
+        </DropdownMenuItem>
+      )}
+      {!product.isDeleted && (
+        <DropdownMenuItem
+          className="text-red-600"
+          onClick={() => onDelete(product.productId)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
+        </DropdownMenuItem>
+      )}
+      {product.isDeleted && onRestore && (
+        <DropdownMenuItem
+          className="text-green-700"
+          onClick={() => onRestore(product.productId)}
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Recover
+        </DropdownMenuItem>
+      )}
     </DropdownMenuContent>
   </DropdownMenu>
 );
@@ -50,7 +64,8 @@ export const ProductActions = ({ product, onEdit, onDelete, onView }: ProductAct
 export const productColumns = (
   onEdit: (product: Product) => void,
   onDelete: (id: string) => void,
-  onView?: (product: Product) => void
+  onView?: (product: Product) => void,
+  onRestore?: (id: string) => void
 ): TableColumn<Product>[] => [
   {
     accessorKey: "name",
@@ -115,6 +130,18 @@ export const productColumns = (
     ),
   },
   {
+    accessorKey: "isDeleted",
+    header: "Deleted",
+    meta: { sortable: true, filterable: true },
+    cell: ({ row }) => (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        row.original.isDeleted ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+      }`}>
+        {row.original.isDeleted ? 'Yes' : 'No'}
+      </span>
+    ),
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
@@ -123,6 +150,7 @@ export const productColumns = (
         onEdit={onEdit}
         onDelete={onDelete}
         onView={onView}
+        onRestore={onRestore}
       />
     ),
   },

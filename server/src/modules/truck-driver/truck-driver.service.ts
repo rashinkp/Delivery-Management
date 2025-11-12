@@ -142,10 +142,25 @@ export class TruckDriverService implements ITruckDriverService {
   }
 
   async remove(id: string): Promise<void> {
-    const driver = await this.findById(id);
+    const driver = await this.truckDriverRepository.findByIdIncludingDeleted(id);
+    if (!driver) {
+      throw new NotFoundException('Truck driver not found');
+    }
+
     const deleted = await this.truckDriverRepository.delete(id);
     if (!deleted) {
       throw new NotFoundException('Failed to delete truck driver');
+    }
+  }
+
+  async restore(id: string): Promise<void> {
+    const driver = await this.truckDriverRepository.findByIdIncludingDeleted(id);
+    if (!driver) {
+      throw new NotFoundException('Truck driver not found');
+    }
+    const restored = await this.truckDriverRepository.restore(id);
+    if (!restored) {
+      throw new NotFoundException('Failed to restore truck driver');
     }
   }
 

@@ -102,6 +102,17 @@ export class VendorController {
     }
   }
 
+  @Patch(':id/restore')
+  @Roles('admin') // Only admin can restore vendors
+  async restore(@Param('id') id: string): Promise<ApiResponseDto<any>> {
+    try {
+      await this.vendorService.restore(id);
+      return ApiResponseDto.success(null, 'Vendor restored successfully');
+    } catch (error) {
+      return ApiResponseDto.error('Failed to restore vendor', error.message);
+    }
+  }
+
   @Patch(':id')
   @Roles('admin') // Only admin can update vendors
   async update(

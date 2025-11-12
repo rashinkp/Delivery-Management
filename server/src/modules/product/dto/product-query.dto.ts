@@ -3,6 +3,10 @@ import { Transform } from 'class-transformer';
 
 export class ProductQueryDto {
   @IsOptional()
+  @IsEnum(['all', 'active', 'deleted'])
+  deleted?: 'all' | 'active' | 'deleted' = 'active';
+
+  @IsOptional()
   @Transform(({ value }) => {
     const num = parseInt(value);
     return isNaN(num) ? 1 : num;

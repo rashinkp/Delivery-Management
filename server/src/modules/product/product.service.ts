@@ -47,10 +47,25 @@ export class ProductService implements IProductService {
   }
 
   async remove(id: string): Promise<void> {
-    const product = await this.findById(id);
+    const product = await this.productRepository.findByIdIncludingDeleted(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
     const deleted = await this.productRepository.delete(id);
     if (!deleted) {
       throw new NotFoundException('Failed to delete product');
+    }
+  }
+
+  async restore(id: string): Promise<void> {
+    const product = await this.productRepository.findByIdIncludingDeleted(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    const restored = await this.productRepository.restore(id);
+    if (!restored) {
+      throw new NotFoundException('Failed to restore product');
     }
   }
 
