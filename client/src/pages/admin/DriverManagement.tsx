@@ -16,6 +16,16 @@ import { DataTable } from "@/components/Table";
 import { DriverForm } from "@/components/driver/DriverForm";
 import { driverColumns } from "@/components/driver/Columns";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
+import {
   useTruckDrivers,
   useCreateTruckDriver,
   useUpdateTruckDriver,
@@ -38,6 +48,13 @@ export default function DriverManagement() {
   
   // Error state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // AlertDialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [targetId, setTargetId] = useState<string | null>(null);
+  const [targetName, setTargetName] = useState<string | null>(null);
 
   // API hooks with server-side pagination and filtering
   const { data: driversResponse, isLoading, error } = useTruckDrivers({
@@ -80,8 +97,10 @@ export default function DriverManagement() {
   const handleCreate = async (data: CreateTruckDriverDto | UpdateTruckDriverDto) => {
     try {
       setErrorMessage(null);
+      setSuccessMessage(null);
       await createMutation.mutateAsync(data as CreateTruckDriverDto);
       setOpenForm(false);
+      setSuccessMessage("Driver created successfully.");
     } catch (error) {
       console.error("Create driver error:", error);
       const message = extractErrorMessage(error);
@@ -111,9 +130,11 @@ export default function DriverManagement() {
         delete updateData.password;
       }
       
+      setSuccessMessage(null);
       await updateMutation.mutateAsync({ id: editingDriver.driverId, data: updateData });
       setOpenForm(false);
       setEditingDriver(undefined);
+      setSuccessMessage("Driver updated successfully.");
     } catch (error) {
       console.error("Update driver error:", error);
       const message = extractErrorMessage(error);
@@ -121,25 +142,51 @@ export default function DriverManagement() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this driver? This action cannot be undone.")) {
-      return;
-    }
+  const confirmDelete = (id: string, name?: string) => {
+    setTargetId(id);
+    setTargetName(name || null);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRestore = (id: string, name?: string) => {
+    setTargetId(id);
+    setTargetName(name || null);
+    setRestoreDialogOpen(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!targetId) return;
     try {
-      await deleteMutation.mutateAsync(id);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+      await deleteMutation.mutateAsync(targetId);
+      setSuccessMessage("Driver deleted successfully.");
     } catch (error) {
       console.error("Delete driver error:", error);
+      const message = extractErrorMessage(error);
+      setErrorMessage(message);
+    } finally {
+      setDeleteDialogOpen(false);
+      setTargetId(null);
+      setTargetName(null);
     }
   };
 
-  const handleRestore = async (id: string) => {
+  const handleRestoreConfirmed = async () => {
+    if (!targetId) return;
     try {
       setErrorMessage(null);
-      await restoreMutation.mutateAsync(id);
+      setSuccessMessage(null);
+      await restoreMutation.mutateAsync(targetId);
+      setSuccessMessage("Driver restored successfully.");
     } catch (error) {
       console.error("Restore driver error:", error);
       const message = extractErrorMessage(error);
       setErrorMessage(message);
+    } finally {
+      setRestoreDialogOpen(false);
+      setTargetId(null);
+      setTargetName(null);
     }
   };
 
@@ -215,10 +262,11 @@ export default function DriverManagement() {
         </Button>
       </div>
 
-      {/* Error Alert */}
+      {/* Alerts */}
       {getErrorMessage() && (
         <Alert type="error" message={getErrorMessage()!} />
       )}
+      {successMessage && <Alert type="success" message={successMessage} />}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
@@ -262,7 +310,18 @@ export default function DriverManagement() {
       {/* Data Table */}
       <DataTable
         data={driversResponse?.data || []}
-        columns={driverColumns(openEdit, handleDelete, handleView, handleRestore)}
+        columns={driverColumns(
+          openEdit,
+          (id: string) => {
+            const d = (driversResponse?.data || []).find(x => x.driverId === id);
+            confirmDelete(id, d?.name);
+          },
+          handleView,
+          (id: string) => {
+            const d = (driversResponse?.data || []).find(x => x.driverId === id);
+            confirmRestore(id, d?.name);
+          }
+        )}
         pagination={pagination}
         totalCount={driversResponse?.total || 0}
         isLoading={isLoading}
@@ -289,6 +348,45 @@ export default function DriverManagement() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Delete AlertDialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete driver</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{targetName || "this driver"}</span>? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirmed}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Restore AlertDialog */}
+      <AlertDialog open={restoreDialogOpen} onOpenChange={setRestoreDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restore driver</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to restore{" "}
+              <span className="font-semibold">{targetName || "this driver"}</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestoreConfirmed}>
+              Restore
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

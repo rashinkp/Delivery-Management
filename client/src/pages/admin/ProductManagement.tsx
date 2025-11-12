@@ -16,6 +16,16 @@ import { DataTable } from "@/components/Table";
 import { ProductForm } from "@/components/product/ProductForm";
 import { productColumns } from "@/components/product/Columns";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
+import {
   useProducts,
   useCreateProduct,
   useUpdateProduct,
@@ -40,6 +50,13 @@ export default function ProductManagement() {
   
   // Error state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // AlertDialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [targetId, setTargetId] = useState<string | null>(null);
+  const [targetName, setTargetName] = useState<string | null>(null);
 
   // Fetch products with server-side pagination, search, and filters
   const { data: productsResp, isLoading, error } = useProducts({
@@ -79,8 +96,10 @@ export default function ProductManagement() {
   const handleCreate = async (data: CreateProductDto | UpdateProductDto) => {
     try {
       setErrorMessage(null);
+      setSuccessMessage(null);
       await createMutation.mutateAsync(data as CreateProductDto);
       setOpenForm(false);
+      setSuccessMessage("Product created successfully.");
     } catch (error) {
       console.error("Create product error:", error);
       const message = extractErrorMessage(error);
@@ -97,6 +116,7 @@ const handleUpdate = async (data: UpdateProductDto) => {
 
   try {
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     // ✅ Remove fields not needed by backend
     const cleanedData: UpdateProductDto = {
@@ -113,6 +133,7 @@ const handleUpdate = async (data: UpdateProductDto) => {
     });
     setOpenForm(false);
     setEditingProduct(undefined);
+    setSuccessMessage("Product updated successfully.");
   } catch (error) {
     console.error("Update product error:", error);
     const message = extractErrorMessage(error);
@@ -121,25 +142,51 @@ const handleUpdate = async (data: UpdateProductDto) => {
 };
 
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
-      return;
-    }
+  const confirmDelete = (id: string, name?: string) => {
+    setTargetId(id);
+    setTargetName(name || null);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmRestore = (id: string, name?: string) => {
+    setTargetId(id);
+    setTargetName(name || null);
+    setRestoreDialogOpen(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!targetId) return;
     try {
-      await deleteMutation.mutateAsync(id);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+      await deleteMutation.mutateAsync(targetId);
+      setSuccessMessage("Product deleted successfully.");
     } catch (error) {
       console.error("Delete product error:", error);
+      const message = extractErrorMessage(error);
+      setErrorMessage(message);
+    } finally {
+      setDeleteDialogOpen(false);
+      setTargetId(null);
+      setTargetName(null);
     }
   };
 
-  const handleRestore = async (id: string) => {
+  const handleRestoreConfirmed = async () => {
+    if (!targetId) return;
     try {
       setErrorMessage(null);
-      await restoreMutation.mutateAsync(id);
+      setSuccessMessage(null);
+      await restoreMutation.mutateAsync(targetId);
+      setSuccessMessage("Product restored successfully.");
     } catch (error) {
       console.error("Restore product error:", error);
       const message = extractErrorMessage(error);
       setErrorMessage(message);
+    } finally {
+      setRestoreDialogOpen(false);
+      setTargetId(null);
+      setTargetName(null);
     }
   };
 
@@ -217,10 +264,11 @@ const handleUpdate = async (data: UpdateProductDto) => {
         </Button>
       </div>
 
-      {/* Error Alert */}
+      {/* Alerts */}
       {getErrorMessage() && (
         <Alert type="error" message={getErrorMessage()!} />
       )}
+      {successMessage && <Alert type="success" message={successMessage} />}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg">
@@ -265,7 +313,18 @@ const handleUpdate = async (data: UpdateProductDto) => {
       {/* Data Table */}
       <DataTable
         data={products}
-        columns={productColumns(openEdit, handleDelete, handleView, handleRestore)}
+        columns={productColumns(
+          openEdit,
+          (id: string) => {
+            const p = products.find(x => x.productId === id);
+            confirmDelete(id, p?.name);
+          },
+          handleView,
+          (id: string) => {
+            const p = products.find(x => x.productId === id);
+            confirmRestore(id, p?.name);
+          }
+        )}
         pagination={{ pageIndex, pageSize }}
         totalCount={total}
         isLoading={isLoading}
@@ -304,6 +363,45 @@ const handleUpdate = async (data: UpdateProductDto) => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Delete AlertDialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{targetName || "this product"}</span>? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirmed}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Restore AlertDialog */}
+      <AlertDialog open={restoreDialogOpen} onOpenChange={setRestoreDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restore product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to restore{" "}
+              <span className="font-semibold">{targetName || "this product"}</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestoreConfirmed}>
+              Restore
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
