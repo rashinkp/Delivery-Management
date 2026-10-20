@@ -166,3 +166,5 @@ Mobile app integration for Truck Drivers (future scope)
 Rashin KP
 💼 Backend Developer | Passionate about clean architecture & scalable APIs
 📧 rashinkp001@gmail.com
+
+[Rashin’s portfolio](https://rashinkp.vercel.app/)
